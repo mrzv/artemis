@@ -4,13 +4,13 @@
 
 from mercurial import hg, util
 from mercurial.i18n import _
-import os, time, random, mailbox, glob, socket
+import os, time, random, mailbox, glob, socket, ConfigParser
 
 
 state = {'new': 'new', 'fixed': 'fixed'}
 state['default'] = state['new']
 issues_dir = ".issues"
-filter_filename = ".filters"
+filter_prefix = ".filter"
 date_format = '%a, %d %b %Y %H:%M:%S %Z'
 
 
@@ -19,7 +19,7 @@ def ilist(ui, repo, **opts):
 
 	# Process options
 	show_all = opts['all']
-	properties = _get_properties(opts['property'])
+	properties = []
 	date_match = lambda x: True
 	if opts['date']: 
 		date_match = util.matchdate(opts['date'])
@@ -29,6 +29,18 @@ def ilist(ui, repo, **opts):
 	if not os.path.exists(issues_path): return
 
 	issues = glob.glob(os.path.join(issues_path, '*'))
+	
+	# Process filter
+	if opts['filter']:
+		filters = glob.glob(os.path.join(issues_path, filter_prefix + '*'))
+		config = ConfigParser.SafeConfigParser()
+		config.read(filters)
+		if not config.has_section(opts['filter']): 
+			ui.warning('No filter %s defined\n', opts['filter'])
+		else:
+			properties += config.items(opts['filter'])
+	
+	_get_properties(opts['property'])
 	
 	for issue in issues:
 		mbox = mailbox.mbox(issue)
@@ -238,7 +250,7 @@ cmdtable = {
 				  ('p', 'property', [], 
 				   'list issues with specific field values (e.g., -p state=fixed)'),
 				  ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
-				  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s)' % (issues_dir, filter_filename))], 
+				  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (issues_dir, filter_prefix))], 
 				 _('hg ilist [OPTIONS]')),
 	'iadd':   	(iadd,  
 				 [], 

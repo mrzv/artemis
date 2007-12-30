@@ -1,7 +1,7 @@
 From artemis Sat Dec 29 07:57:17 2007
 From: Dmitriy Morozov <morozov@cs.duke.edu>
 Date: Sat, 29 Dec 2007 02:52:52 EST
-State: new
+State: fixed
 Subject: filters
 Message-Id: 8e4d2c2d12eb0169-0-artemis@metatron
 
@@ -18,3 +18,12 @@ component=gui
 
 Then hg ilist -f critical-1.0 would show only issues with properties
 due-in and priority set to 1.0 and critical in the respective headers.
+
+From MAILER-DAEMON Sun Dec 30 13:37:54 2007
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+Date: Sun, 30 Dec 2007 08:37:54 EST
+Subject: properties changes (state)
+Message-Id: 8e4d2c2d12eb0169-1-artemis@metatron
+References: 8e4d2c2d12eb0169-0-artemis@metatron
+
+state=fixed
