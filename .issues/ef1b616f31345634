@@ -3,7 +3,7 @@ From: Dmitriy Morozov <morozov@cs.duke.edu>
 Date: Sat, 29 Dec 2007 16:12:43 EST
 State: new
 Subject: intergration with commit
-Message-Id: ef1b616f31345634-0-artemis@metatron
+Message-Id: <ef1b616f31345634-0-artemis@metatron>
 
 When an issue id is mentioned in a commit message, the text of the
 message should be added as a comment to the issue (prior to the

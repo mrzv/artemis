@@ -3,7 +3,7 @@ From: Dmitriy Morozov <morozov@cs.duke.edu>
 Date: Sat, 29 Dec 2007 02:50:26 EST
 State: new
 Subject: attachments in iadd
-Message-Id: 95536ae767c2743a-0-artemis@metatron
+Message-Id: <95536ae767c2743a-0-artemis@metatron>
 
 Add ability to attach files in iadd command. Perhaps use -a flag for
 it (allowing multiple attachments). Store as a multipart message. List
