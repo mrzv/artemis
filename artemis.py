@@ -7,8 +7,8 @@ from mercurial.i18n import _
 import os, time, random, mailbox, glob, socket
 
 
-new_state = "new"
-default_state = new_state
+state = {'new': 'new', 'fixed': 'fixed'}
+state['default'] = state['new']
 issues_dir = ".issues"
 filter_filename = ".filters"
 date_format = '%a, %d %b %Y %H:%M:%S %Z'
@@ -18,8 +18,8 @@ def list(ui, repo, **opts):
 	"""List issues associated with the project"""
 
 	# Process options
-	show_all = False or opts['all']
-	properties = _get_properties(opts['property']) or [['state', new_state]]
+	show_all = opts['all']
+	properties = _get_properties(opts['property'])
 	date_match = lambda x: True
 	if opts['date']: 
 		date_match = util.matchdate(opts['date'])
@@ -35,12 +35,14 @@ def list(ui, repo, **opts):
 		property_match = True
 		for property,value in properties: 
 			property_match = property_match and (mbox[0][property] == value)
-		if not show_all and not property_match: continue
+		if not show_all and (not properties or not property_match) and (properties or mbox[0]['State'].upper() == state['fixed'].upper()): continue 
+
+
 		if not date_match(util.parsedate(mbox[0]['date'], [date_format])[0]): continue
-		print "%s (%d) [%s]: %s" % (issue[len(issues_path)+1:], # +1 for trailing /
-									len(mbox)-1,				# number of replies (-1 for self)
-									mbox[0]['State'],
-									mbox[0]['Subject'])
+		ui.write("%s (%d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
+										 len(mbox)-1,				 # number of replies (-1 for self)
+										 mbox[0]['State'],
+										 mbox[0]['Subject']))
 	
 
 def add(ui, repo, id = None, comment = 0):
@@ -62,7 +64,7 @@ def add(ui, repo, id = None, comment = 0):
 
 	default_issue_text  = 		"From: %s\nDate: %s\n" % (user, time.strftime(date_format))
 	if not id: 
-		default_issue_text += 	"State: %s\n" % default_state
+		default_issue_text += 	"State: %s\n" % state['default']
 	default_issue_text +=		"Subject: brief description\n\n"
 	default_issue_text += 		"Detailed description."
 
@@ -224,7 +226,7 @@ def _show_mbox(ui, mbox, comment):
 
 cmdtable = {
 	'ilist':	(list, 
-				 [('a', 'all', None, 
+				 [('a', 'all', False, 
 				   'list all issues (by default only those with state new)'),
 				  ('p', 'property', [], 
 				   'list issues with specific field values (e.g., -p state=fixed)'),
