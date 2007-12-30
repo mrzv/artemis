@@ -69,7 +69,7 @@ def iadd(ui, repo, id = None, comment = 0):
 	if id:
 		issue_fn, issue_id = _find_issue(ui, repo, id)
 		if not issue_fn: 
-			ui.warn('No such issue')
+			ui.warn('No such issue\n')
 			return
 	
 	user = ui.username()
@@ -96,7 +96,7 @@ def iadd(ui, repo, id = None, comment = 0):
 	if not id:
 		issue_fn = issues_path
 		while os.path.exists(issue_fn):
-			issue_id = "%x" % random.randint(2**63, 2**64-1)
+			issue_id = _random_id() 
 			issue_fn = os.path.join(issues_path, issue_id)
 	# else: issue_fn already set
 
@@ -105,9 +105,9 @@ def iadd(ui, repo, id = None, comment = 0):
 	if id and comment not in mbox: 
 		ui.warn('No such comment number in mailbox, commenting on the issue itself\n')
 	if not id:
-		msg.add_header('Message-Id', "%s-0-artemis@%s" % (issue_id, socket.gethostname()))
+		msg.add_header('Message-Id', "<%s-0-artemis@%s>" % (issue_id, socket.gethostname()))
 	else:
-		msg.add_header('Message-Id', "%s-%d-artemis@%s" % (issue_id, len(mbox), socket.gethostname()))
+		msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
 		msg.add_header('References', mbox[(comment < len(mbox) and comment) or 0]['Message-Id'])
 	mbox.add(msg)
 	mbox.close()
@@ -163,8 +163,9 @@ def iupdate(ui, repo, id, **opts):
 							 _pretty_list(list(set([property for property, value in properties]))), 
 							 properties_text)
 		msg = mailbox.mboxMessage(properties_text)
-		msg.add_header('Message-Id', "%s-%d-artemis@%s" % (id, len(mbox), socket.gethostname()))
+		msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (id, _random_id(), socket.gethostname()))
 		msg.add_header('References', mbox[0]['Message-Id'])
+		msg.set_from('artemis', True)
 		mbox.add(msg)
 	mbox.flush()
 
@@ -241,6 +242,9 @@ def _pretty_list(lst):
 	for i in lst:
 		s += i + ', '
 	return s[:-2]
+
+def _random_id():
+	return "%x" % random.randint(2**63, 2**64-1)
 
 
 cmdtable = {
