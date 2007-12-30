@@ -14,7 +14,7 @@ filter_filename = ".filters"
 date_format = '%a, %d %b %Y %H:%M:%S %Z'
 
 
-def list(ui, repo, **opts):
+def ilist(ui, repo, **opts):
 	"""List issues associated with the project"""
 
 	# Process options
@@ -45,7 +45,7 @@ def list(ui, repo, **opts):
 										 mbox[0]['Subject']))
 	
 
-def add(ui, repo, id = None, comment = 0):
+def iadd(ui, repo, id = None, comment = 0):
 	"""Adds a new issue, or comment to an existing issue ID or its comment COMMENT"""
 	
 	comment = int(comment)
@@ -106,7 +106,7 @@ def add(ui, repo, id = None, comment = 0):
 		ui.status('Added new issue %s\n' % issue_id)
 
 
-def show(ui, repo, id, comment = 0, **opts):
+def ishow(ui, repo, id, comment = 0, **opts):
 	"""Shows issue ID, or possibly its comment COMMENT"""
 	
 	comment = int(comment)
@@ -124,7 +124,7 @@ def show(ui, repo, id, comment = 0, **opts):
 	_show_mbox(ui, mbox, comment)
 
 
-def update(ui, repo, id, **opts):
+def iupdate(ui, repo, id, **opts):
 	"""Update properties of issue ID"""
 
 	issue, id = _find_issue(ui, repo, id)
@@ -146,8 +146,9 @@ def update(ui, repo, id, **opts):
 	# Write down a comment about updated properties
 	if properties and not opts['no_property_comment']:
 		user = ui.username()
-		properties_text  = 	"From: %s\nDate: %s\nSubject: properties changes %s\n\n%s" % (user, time.strftime(date_format),
-							 [property for property, value in properties], 
+		properties_text  = 	"From: %s\nDate: %s\nSubject: properties changes (%s)\n\n%s" % \
+							(user, time.strftime(date_format),
+							 _pretty_list(list(set([property for property, value in properties]))), 
 							 properties_text)
 		msg = mailbox.mboxMessage(properties_text)
 		msg.add_header('Message-Id', "%s-%d-artemis@%s" % (id, len(mbox), socket.gethostname()))
@@ -223,9 +224,15 @@ def _show_mbox(ui, mbox, comment):
 		ui.write('  '*offset + ('%d: ' % index) + msg['Subject'] + '\n')
 	ui.write('-'*70 + '\n')
 
+def _pretty_list(lst):
+	s = ''
+	for i in lst:
+		s += i + ', '
+	return s[:-2]
+
 
 cmdtable = {
-	'ilist':	(list, 
+	'ilist':	(ilist, 
 				 [('a', 'all', False, 
 				   'list all issues (by default only those with state new)'),
 				  ('p', 'property', [], 
@@ -233,13 +240,13 @@ cmdtable = {
 				  ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
 				  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s)' % (issues_dir, filter_filename))], 
 				 _('hg ilist [OPTIONS]')),
-	'iadd':   	(add,  
+	'iadd':   	(iadd,  
 				 [], 
 				 _('hg iadd [ID] [COMMENT]')),
-	'ishow':  	(show, 
+	'ishow':  	(ishow, 
 				 [('a', 'all', None, 'list all comments')], 
 				 _('hg ishow [OPTIONS] ID [COMMENT]')),
-	'iupdate':	(update,
+	'iupdate':	(iupdate,
 				 [('p', 'property', [], 
 				   'update properties (e.g., -p state=fixed)'),
 				  ('n', 'no-property-comment', None, 
