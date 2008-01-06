@@ -24,6 +24,7 @@ From: Dmitriy Morozov <morozov@cs.duke.edu>
 Date: Sun, 30 Dec 2007 08:37:54 EST
 Subject: properties changes (state)
 Message-Id: <8e4d2c2d12eb0169-1-artemis@metatron>
+In-Reply-To: <8e4d2c2d12eb0169-0-artemis@metatron>
 References: <8e4d2c2d12eb0169-0-artemis@metatron>
 
 state=fixed
