@@ -20,9 +20,9 @@ def ilist(ui, repo, **opts):
 	# Process options
 	show_all = opts['all']
 	properties = []
-	date_match = lambda x: True
+	match_date, date_match = False, lambda x: True
 	if opts['date']: 
-		date_match = util.matchdate(opts['date'])
+		match_date, date_match = True, util.matchdate(opts['date'])
 
 	# Find issues
 	issues_path = os.path.join(repo.root, issues_dir)
@@ -50,7 +50,7 @@ def ilist(ui, repo, **opts):
 		if not show_all and (not properties or not property_match) and (properties or mbox[0]['State'].upper() == state['fixed'].upper()): continue 
 
 
-		if not date_match(util.parsedate(mbox[0]['date'], [date_format])[0]): continue
+		if match_date and not date_match(util.parsedate(mbox[0]['date'], [date_format])[0]): continue
 		ui.write("%s (%d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
 										 len(mbox)-1,				 # number of replies (-1 for self)
 										 mbox[0]['State'],
