@@ -1,0 +1,11 @@
+From artemis Fri Jan  4 18:24:46 2008
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+Date: Fri, 04 Jan 2008 13:16:44 EST
+State: new
+Subject: Thread messages by In-Reply-To
+Message-Id: <b7cdd0ec985471b7-0-artemis@metatron>
+
+Artemis is threading messages by References header, and assumes that
+there is only one element there. It should thread messages by
+In-Reply-To header (and set it accordingly), and either ignore
+References, or set it be equal to In-Reply-To.
