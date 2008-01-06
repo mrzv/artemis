@@ -109,6 +109,7 @@ def iadd(ui, repo, id = None, comment = 0):
 	else:
 		msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
 		msg.add_header('References', mbox[(comment < len(mbox) and comment) or 0]['Message-Id'])
+		msg.add_header('In-Reply-To', mbox[(comment < len(mbox) and comment) or 0]['Message-Id'])
 	mbox.add(msg)
 	mbox.close()
 
@@ -165,6 +166,7 @@ def iupdate(ui, repo, id, **opts):
 		msg = mailbox.mboxMessage(properties_text)
 		msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (id, _random_id(), socket.gethostname()))
 		msg.add_header('References', mbox[0]['Message-Id'])
+		msg.add_header('In-Reply-To', mbox[0]['Message-Id'])
 		msg.set_from('artemis', True)
 		mbox.add(msg)
 	mbox.flush()
@@ -222,7 +224,7 @@ def _show_mbox(ui, mbox, comment):
 	for i in xrange(len(mbox)):
 		m = mbox[i]
 		messages[m['Message-Id']] = (i,m)
-		children.setdefault(m['References'], []).append(m['Message-Id'])
+		children.setdefault(m['In-Reply-To'], []).append(m['Message-Id'])
 	children[None] = []				# Safeguard against infinte loop on empty Message-Id
 
 	# Iterate over children
