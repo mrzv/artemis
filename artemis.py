@@ -40,7 +40,7 @@ def ilist(ui, repo, **opts):
         else:
             properties += config.items(opts['filter'])
 
-    _get_properties(opts['property'])
+    properties += _get_properties(opts['property'])
 
     for issue in issues:
         mbox = mailbox.mbox(issue)
