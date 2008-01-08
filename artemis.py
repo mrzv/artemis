@@ -29,7 +29,7 @@ def ilist(ui, repo, **opts):
     if not os.path.exists(issues_path): return
 
     issues = glob.glob(os.path.join(issues_path, '*'))
-   
+
     # Process filter
     if opts['filter']:
         filters = glob.glob(os.path.join(issues_path, filter_prefix + '*'))
@@ -39,9 +39,9 @@ def ilist(ui, repo, **opts):
             ui.warning('No filter %s defined\n', opts['filter'])
         else:
             properties += config.items(opts['filter'])
-   
+
     _get_properties(opts['property'])
-   
+
     for issue in issues:
         mbox = mailbox.mbox(issue)
         property_match = True
@@ -55,11 +55,11 @@ def ilist(ui, repo, **opts):
                                          len(mbox)-1,                 # number of replies (-1 for self)
                                          mbox[0]['State'],
                                          mbox[0]['Subject']))
-   
+
 
 def iadd(ui, repo, id = None, comment = 0):
     """Adds a new issue, or comment to an existing issue ID or its comment COMMENT"""
-   
+
     comment = int(comment)
 
     # First, make sure issues have a directory
@@ -71,7 +71,7 @@ def iadd(ui, repo, id = None, comment = 0):
         if not issue_fn:
             ui.warn('No such issue\n')
             return
-   
+
     user = ui.username()
 
     default_issue_text  =         "From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
@@ -91,7 +91,7 @@ def iadd(ui, repo, id = None, comment = 0):
     # Create the message
     msg = mailbox.mboxMessage(issue)
     msg.set_from('artemis', True)
-   
+
     # Pick random filename
     if not id:
         issue_fn = issues_path
@@ -121,7 +121,7 @@ def iadd(ui, repo, id = None, comment = 0):
 
 def ishow(ui, repo, id, comment = 0, **opts):
     """Shows issue ID, or possibly its comment COMMENT"""
-   
+
     comment = int(comment)
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
@@ -144,7 +144,7 @@ def iupdate(ui, repo, id, **opts):
     if not issue: return
 
     properties = _get_properties(opts['property'])
-   
+
     # Read the issue
     mbox = mailbox.mbox(issue)
     msg = mbox[0]
@@ -187,12 +187,12 @@ def _find_issue(ui, repo, id):
         ui.status("Multiple choices:\n")
         for i in issues: ui.status('  ', i[len(issues_path)+1:], '\n')
         return False, 0
-   
+
     return issues[0], issues[0][len(issues_path)+1:]
 
 def _get_properties(property_list):
     return [p.split('=') for p in property_list]
-   
+
 def _write_message(ui, message, index = 0):
     if index: ui.write("Comment: %d\n" % index)
     if ui.verbose:
