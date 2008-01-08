@@ -11,7 +11,7 @@ state = {'new': 'new', 'fixed': 'fixed'}
 state['default'] = state['new']
 issues_dir = ".issues"
 filter_prefix = ".filter"
-date_format = '%a, %d %b %Y %H:%M:%S %Z'
+date_format = '%a, %d %b %Y %H:%M:%S'
 
 
 def ilist(ui, repo, **opts):
@@ -50,7 +50,7 @@ def ilist(ui, repo, **opts):
 		if not show_all and (not properties or not property_match) and (properties or mbox[0]['State'].upper() == state['fixed'].upper()): continue 
 
 
-		if match_date and not date_match(util.parsedate(mbox[0]['date'], [date_format])[0]): continue
+		if match_date and not date_match(util.parsedate(mbox[0]['date'])[0]): continue
 		ui.write("%s (%d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
 										 len(mbox)-1,				 # number of replies (-1 for self)
 										 mbox[0]['State'],
@@ -74,7 +74,7 @@ def iadd(ui, repo, id = None, comment = 0):
 	
 	user = ui.username()
 
-	default_issue_text  = 		"From: %s\nDate: %s\n" % (user, time.strftime(date_format))
+	default_issue_text  = 		"From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
 	if not id: 
 		default_issue_text += 	"State: %s\n" % state['default']
 	default_issue_text +=		"Subject: brief description\n\n"
@@ -160,7 +160,7 @@ def iupdate(ui, repo, id, **opts):
 	if properties and not opts['no_property_comment']:
 		user = ui.username()
 		properties_text  = 	"From: %s\nDate: %s\nSubject: properties changes (%s)\n\n%s" % \
-							(user, time.strftime(date_format),
+							(user, util.datestr(format = date_format),
 							 _pretty_list(list(set([property for property, value in properties]))), 
 							 properties_text)
 		msg = mailbox.mboxMessage(properties_text)
