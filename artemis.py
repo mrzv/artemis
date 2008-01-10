@@ -1,5 +1,5 @@
 # Author: Dmitriy Morozov <hg@foxcub.org>, 2007
-
+        
 """A very simple and lightweight issue tracker for Mercurial."""
 
 from mercurial import hg, util
@@ -51,10 +51,10 @@ def ilist(ui, repo, **opts):
 
 
         if match_date and not date_match(util.parsedate(mbox[0]['date'])[0]): continue
-        ui.write("%s (%d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
-                                         len(mbox)-1,                 # number of replies (-1 for self)
-                                         mbox[0]['State'],
-                                         mbox[0]['Subject']))
+        ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
+                                          len(mbox)-1,                # number of replies (-1 for self)
+                                          mbox[0]['State'],
+                                          mbox[0]['Subject']))
 
 
 def iadd(ui, repo, id = None, comment = 0):
@@ -271,3 +271,5 @@ cmdtable = {
                    'do not add a comment about changed properties')],
                  _('hg iupdate [OPTIONS] ID'))
 }
+
+# vim: expandtab
