@@ -152,7 +152,10 @@ def iupdate(ui, repo, id, **opts):
     # Fix the properties
     properties_text = ''
     for property, value in properties:
-        msg.replace_header(property, value)
+        if property in msg:
+            msg.replace_header(property, value)
+        else:
+            msg.add_header(property, value)
         properties_text += '%s=%s\n' % (property, value)
     mbox[0] = msg
 
