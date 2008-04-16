@@ -1,0 +1,60 @@
+Date: Fri, 04 Jan 2008 18:34:36 -0500
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+To: Mirko Friedenhagen <mirko@friedenhagen.de>
+Subject: Re: hg ishow fails in clone of Artemis-repo
+Message-ID: <20080104233436.GA1930@cs.duke.edu>
+References: <D08973FE-D4D3-471D-A0E3-4CE2C4C4677F@friedenhagen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <D08973FE-D4D3-471D-A0E3-4CE2C4C4677F@friedenhagen.de>
+User-Agent: Mutt/1.4.2.2i
+Status: RO
+Content-Length: 1475
+Lines: 45
+
+Hi, Mirko,
+
+What version of Python, and more importantly what version of Mercurial
+do you have? I have an idea of where the problem is, but I need the
+version numbers first.
+
+Thanks.
+Dmitriy
+
+On Sat, Jan 05, 2008 at 12:31:27AM +0100, Mirko Friedenhagen wrote:
+>Hello Dmitriy,
+>
+>first of all let me thank you for this extension, I have the feeling  
+>that it might be really useful.
+>
+>I have one issue with the clone, "hg ilist" will abort, "hg ishow"  
+>does not have any problems:
+>
+>[mirko@borg Artemis]$ hg log -l1
+>changeset:   9:5319c712fa34
+>tag:         tip
+>user:        Dmitriy Morozov <morozov@cs.duke.edu>
+>date:        Sun Dec 30 09:23:23 2007 -0500
+>summary:     Fixed Message-Ids of our bugs (wrapped them in <...>)
+>
+>[mirko@borg Artemis]$ hg ilist
+>abort: invalid date: 'Sat, 29 Dec 2007 02:50:26 EST'
+>
+>[mirko@borg Artemis]$ grep -r 'Sat, 29 Dec 2007 02:50:26 EST' .issues/
+>.issues/95536ae767c2743a:Date: Sat, 29 Dec 2007 02:50:26 EST
+>
+>[mirko@borg Artemis]$ hg ishow 95536ae767c2743a
+>======================================================================
+>From: Dmitriy Morozov <morozov@cs.duke.edu>
+>Date: Sat, 29 Dec 2007 02:50:26 EST
+>Subject: attachments in iadd
+>State: new
+>
+>Add ability to attach files in iadd command. Perhaps use -a flag for
+>it (allowing multiple attachments). Store as a multipart message. List
+>all parts of messages in ishow.
+>----------------------------------------------------------------------
+>
+>Best Regards
+>Mirko

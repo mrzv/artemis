@@ -1,0 +1,36 @@
+Date: Sun, 06 Jan 2008 00:45:57 -0500
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+To: Mirko Friedenhagen <mirko@friedenhagen.de>
+Subject: Re: hg ishow fails in clone of Artemis-repo
+Message-ID: <20080106054557.GA12219@cs.duke.edu>
+References: <D08973FE-D4D3-471D-A0E3-4CE2C4C4677F@friedenhagen.de> <20080104233436.GA1930@cs.duke.edu> <312C0172-3EF2-488A-A993-CF56C183F9A0@friedenhagen.de> <20080105124708.GA7043@cs.duke.edu> <8B223BED-8A46-4129-A4F3-76B50A890874@friedenhagen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <8B223BED-8A46-4129-A4F3-76B50A890874@friedenhagen.de>
+User-Agent: Mutt/1.4.2.2i
+Status: RO
+X-Status: A
+Content-Length: 675
+Lines: 20
+
+Hi, Mirko,
+
+Very strange. I still don't see what the problem is. Try the attached
+version of artemis.py. It's not really a fix: it's the fix of the
+immediate problem, but if you try to use -d flag of ilist, the problem
+will come back. Meanwhile, I'll think about it some more.
+
+Best,
+Dmitriy
+
+On Sat, Jan 05, 2008 at 10:18:01PM +0100, Mirko Friedenhagen wrote:
+>Am 05.01.2008 um 13:47 schrieb Dmitriy Morozov:
+>
+>>Hi, Mirko,
+>>
+>>I'm unable to replicate the problem with mercrial/crew. Can you send
+>>me util.py (i.e., mercurial/util.py) from the repository that you are
+>>actually using?
+>I did not alter anything in it, see the diff between my local branch  
+>and default:

@@ -1,0 +1,41 @@
+Return-Path: <mirko@friedenhagen.de>
+X-Spam-Checker-Version: SpamAssassin 3.2.2 (2007-07-23) on one.cs.duke.edu
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=AWL,BAYES_00 autolearn=ham
+	version=3.2.2
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.126.177])
+	by one.cs.duke.edu (8.14.0/8.14.0) with ESMTP id m07LRYaF024588
+	for <morozov@cs.duke.edu>; Mon, 7 Jan 2008 16:27:34 -0500 (EST)
+Received: from borg.local (HSI-KBW-085-216-123-176.hsi.kabelbw.de [85.216.123.176])
+	by mrelayeu.kundenserver.de (node=mrelayeu0) with ESMTP (Nemesis)
+	id 0MKwh2-1JBzVI0J5o-00061N; Mon, 07 Jan 2008 22:27:28 +0100
+Message-Id: <13CC4175-53F2-4ED1-94E7-075922A02DF7@friedenhagen.de>
+From: Mirko Friedenhagen <mirko@friedenhagen.de>
+To: Dmitriy Morozov <morozov@cs.duke.edu>
+In-Reply-To: <20080106062303.GA12860@cs.duke.edu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: hg ishow fails in clone of Artemis-repo
+Date: Mon, 07 Jan 2008 22:27:28 +0100
+References: <D08973FE-D4D3-471D-A0E3-4CE2C4C4677F@friedenhagen.de> <20080104233436.GA1930@cs.duke.edu> <312C0172-3EF2-488A-A993-CF56C183F9A0@friedenhagen.de> <20080105124708.GA7043@cs.duke.edu> <8B223BED-8A46-4129-A4F3-76B50A890874@friedenhagen.de> <20080106054557.GA12219@cs.duke.edu> <20080106054630.GB12219@cs.duke.edu> <20080106062303.GA12860@cs.duke.edu>
+X-Mailer: Apple Mail (2.915)
+X-Provags-ID: V01U2FsdGVkX1+U2upB6j5zBd5UJpAi32pjepkqEt+f2EUVXLk
+ 4xDmYE1gswRWEpvxtO62gW/Yu3xHjgzpqm+BfgIVmuRIVXzof7
+ YHAIOIdRdjxlxATKGndHQ==
+Status: RO
+Content-Length: 357
+Lines: 12
+
+I propably found the error:
+
+According to /usr/lib/python2.5/_strptime.py, '%Z' is restricted to:
+[mirko@borg mercurial-crew]$ python -c 'import _strptime; print  
+_strptime.TimeRE()["Z"]'
+(?P<Z>cest|utc|cet|gmt)
+
+This is propably only true for my local timezone as is EST for  
+yours :-). Switching to numeric timezones should do the trick.
+
+Regards
+Mirko

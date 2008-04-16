@@ -1,0 +1,64 @@
+Return-Path: <mirko@friedenhagen.de>
+X-Spam-Checker-Version: SpamAssassin 3.2.2 (2007-07-23) on one.cs.duke.edu
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.2 required=5.0 tests=BAYES_40 autolearn=ham
+	version=3.2.2
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.126.177])
+	by one.cs.duke.edu (8.14.0/8.14.0) with ESMTP id m04NVf7J019792
+	for <morozov@cs.duke.edu>; Fri, 4 Jan 2008 18:31:43 -0500 (EST)
+Received: from borg.local (HSI-KBW-085-216-123-176.hsi.kabelbw.de [85.216.123.176])
+	by mrelayeu.kundenserver.de (node=mrelayeu2) with ESMTP (Nemesis)
+	id 0MKwtQ-1JAw0l1aId-0006EP; Sat, 05 Jan 2008 00:31:35 +0100
+Message-Id: <D08973FE-D4D3-471D-A0E3-4CE2C4C4677F@friedenhagen.de>
+From: Mirko Friedenhagen <mirko@friedenhagen.de>
+To: Dmitriy Morozov <morozov@cs.duke.edu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: hg ishow fails in clone of Artemis-repo
+Date: Sat, 05 Jan 2008 00:31:27 +0100
+State: fixed
+X-Mailer: Apple Mail (2.915)
+X-Provags-ID: V01U2FsdGVkX1/JysvjyYiL3YHLT6W7yfO6FZ1JMB6PepAft/b
+ jnXeHpRbt2ZogH7u/u+9jEuj7D5SulS51Scfvx4LgDgb4pctZs
+ sbaVxmR5TQar5n7qj9MGA==
+Status: RO
+X-Status: A
+Content-Length: 1180
+Lines: 35
+
+Hello Dmitriy,
+
+first of all let me thank you for this extension, I have the feeling  
+that it might be really useful.
+
+I have one issue with the clone, "hg ilist" will abort, "hg ishow"  
+does not have any problems:
+
+[mirko@borg Artemis]$ hg log -l1
+changeset:   9:5319c712fa34
+tag:         tip
+user:        Dmitriy Morozov <morozov@cs.duke.edu>
+date:        Sun Dec 30 09:23:23 2007 -0500
+summary:     Fixed Message-Ids of our bugs (wrapped them in <...>)
+
+[mirko@borg Artemis]$ hg ilist
+abort: invalid date: 'Sat, 29 Dec 2007 02:50:26 EST'
+
+[mirko@borg Artemis]$ grep -r 'Sat, 29 Dec 2007 02:50:26 EST' .issues/
+.issues/95536ae767c2743a:Date: Sat, 29 Dec 2007 02:50:26 EST
+
+[mirko@borg Artemis]$ hg ishow 95536ae767c2743a
+======================================================================
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+Date: Sat, 29 Dec 2007 02:50:26 EST
+Subject: attachments in iadd
+State: new
+
+Add ability to attach files in iadd command. Perhaps use -a flag for
+it (allowing multiple attachments). Store as a multipart message. List
+all parts of messages in ishow.
+----------------------------------------------------------------------
+
+Best Regards
+Mirko
