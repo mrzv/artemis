@@ -12,6 +12,7 @@ state['default'] = state['new']
 issues_dir = ".issues"
 filter_prefix = ".filter"
 date_format = '%a, %d %b %Y %H:%M:%S'
+maildir_dirs = ['new','cur','tmp']
 
 
 def ilist(ui, repo, **opts):
@@ -29,6 +30,12 @@ def ilist(ui, repo, **opts):
     if not os.path.exists(issues_path): return
 
     issues = glob.glob(os.path.join(issues_path, '*'))
+
+    # Create missing dirs
+    for i in issues:
+        for d in maildir_dirs:
+            path = os.path.join(issues_path,i,d)
+            if not os.path.exists(path): os.mkdir(path)
 
     # Process filter
     if opts['filter']:
@@ -72,13 +79,16 @@ def iadd(ui, repo, id = None, comment = 0):
         if not issue_fn:
             ui.warn('No such issue\n')
             return
+        for d in maildir_dirs:
+            path = os.path.join(issues_path,issue_id,d)
+            if not os.path.exists(path): os.mkdir(path)
 
     user = ui.username()
 
     default_issue_text  =         "From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
     if not id:
         default_issue_text +=     "State: %s\n" % state['default']
-    default_issue_text +=        "Subject: brief description\n\n"
+    default_issue_text +=         "Subject: brief description\n\n"
     default_issue_text +=         "Detailed description."
 
     issue = ui.edit(default_issue_text, user)
@@ -129,6 +139,12 @@ def ishow(ui, repo, id, comment = 0, **opts):
     comment = int(comment)
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
+    
+    # Create missing dirs
+    for d in maildir_dirs:
+        path = os.path.join(repo.root,issues_dir,issue,d)
+        if not os.path.exists(path): os.mkdir(path)
+
     mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
 
     if opts['all']:
@@ -149,6 +165,12 @@ def iupdate(ui, repo, id, **opts):
 
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
+    
+    # Create missing dirs
+    for d in maildir_dirs:
+        path = os.path.join(repo.root,issues_dir,issue,d)
+        if not os.path.exists(path): os.mkdir(path)
+
 
     properties = _get_properties(opts['property'])
 
@@ -177,10 +199,10 @@ def iupdate(ui, repo, id, **opts):
                              properties_text)
         msg = mailbox.mboxMessage(properties_text)
         msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (id, _random_id(), socket.gethostname()))
-        msg.add_header('References', mbox[0]['Message-Id'])
-        msg.add_header('In-Reply-To', mbox[0]['Message-Id'])
+        msg.add_header('References', mbox[root]['Message-Id'])
+        msg.add_header('In-Reply-To', mbox[root]['Message-Id'])
         #msg.set_from('artemis', True)
-        repo.add([issue_fn[(len(repo.root)+1):] + '/new/'  + mbox.add(msg)])   # +1 for the trailing /
+        repo.add([issue[(len(repo.root)+1):] + '/new/'  + mbox.add(msg)])   # +1 for the trailing /
     mbox.close()
 
     # Show updated message
