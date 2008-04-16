@@ -43,18 +43,19 @@ def ilist(ui, repo, **opts):
     properties += _get_properties(opts['property'])
 
     for issue in issues:
-        mbox = mailbox.mbox(issue)
+        mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
+        root = _find_root_key(mbox)
         property_match = True
         for property,value in properties:
-            property_match = property_match and (mbox[0][property] == value)
-        if not show_all and (not properties or not property_match) and (properties or mbox[0]['State'].upper() == state['fixed'].upper()): continue
+            property_match = property_match and (mbox[root][property] == value)
+        if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() == state['fixed'].upper()): continue
 
 
-        if match_date and not date_match(util.parsedate(mbox[0]['date'])[0]): continue
+        if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
         ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
                                           len(mbox)-1,                # number of replies (-1 for self)
-                                          mbox[0]['State'],
-                                          mbox[0]['Subject']))
+                                          mbox[root]['State'],
+                                          mbox[root]['Subject']))
 
 
 def iadd(ui, repo, id = None, comment = 0):
@@ -89,8 +90,8 @@ def iadd(ui, repo, id = None, comment = 0):
         return
 
     # Create the message
-    msg = mailbox.mboxMessage(issue)
-    msg.set_from('artemis', True)
+    msg = mailbox.MaildirMessage(issue)
+    #msg.set_from('artemis', True)
 
     # Pick random filename
     if not id:
@@ -101,21 +102,24 @@ def iadd(ui, repo, id = None, comment = 0):
     # else: issue_fn already set
 
     # Add message to the mailbox
-    mbox = mailbox.mbox(issue_fn)
-    if id and comment not in mbox:
+    mbox = mailbox.Maildir(issue_fn)
+    keys = _order_keys_date(mbox)
+    mbox.lock()
+    if id and comment >= len(mbox):
         ui.warn('No such comment number in mailbox, commenting on the issue itself\n')
+
     if not id:
         msg.add_header('Message-Id', "<%s-0-artemis@%s>" % (issue_id, socket.gethostname()))
     else:
+        root = keys[0]
         msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
-        msg.add_header('References', mbox[(comment < len(mbox) and comment) or 0]['Message-Id'])
-        msg.add_header('In-Reply-To', mbox[(comment < len(mbox) and comment) or 0]['Message-Id'])
-    mbox.add(msg)
+        msg.add_header('References', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
+        msg.add_header('In-Reply-To', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
+    repo.add([issue_fn[(len(repo.root)+1):] + '/new/'  + mbox.add(msg)])   # +1 for the trailing /
     mbox.close()
 
     # If adding issue, add the new mailbox to the repository
     if not id:
-        repo.add([issue_fn[(len(repo.root)+1):]])            # +1 for the trailing /
         ui.status('Added new issue %s\n' % issue_id)
 
 
@@ -125,13 +129,16 @@ def ishow(ui, repo, id, comment = 0, **opts):
     comment = int(comment)
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
-    mbox = mailbox.mbox(issue)
+    mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
 
     if opts['all']:
         ui.write('='*70 + '\n')
-        for i in xrange(len(mbox)):
-            _write_message(ui, mbox[i], i)
+        i = 0
+        keys = _order_keys_date(mbox) 
+        for k in keys:
+            _write_message(ui, mbox[k], i)
             ui.write('-'*70 + '\n')
+            i += 1
         return
 
     _show_mbox(ui, mbox, comment)
@@ -146,8 +153,9 @@ def iupdate(ui, repo, id, **opts):
     properties = _get_properties(opts['property'])
 
     # Read the issue
-    mbox = mailbox.mbox(issue)
-    msg = mbox[0]
+    mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
+    root = _find_root_key(mbox)
+    msg = mbox[root]
 
     # Fix the properties
     properties_text = ''
@@ -157,7 +165,8 @@ def iupdate(ui, repo, id, **opts):
         else:
             msg.add_header(property, value)
         properties_text += '%s=%s\n' % (property, value)
-    mbox[0] = msg
+    mbox.lock()
+    mbox[root] = msg
 
     # Write down a comment about updated properties
     if properties and not opts['no_property_comment']:
@@ -170,9 +179,9 @@ def iupdate(ui, repo, id, **opts):
         msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (id, _random_id(), socket.gethostname()))
         msg.add_header('References', mbox[0]['Message-Id'])
         msg.add_header('In-Reply-To', mbox[0]['Message-Id'])
-        msg.set_from('artemis', True)
-        mbox.add(msg)
-    mbox.flush()
+        #msg.set_from('artemis', True)
+        repo.add([issue_fn[(len(repo.root)+1):] + '/new/'  + mbox.add(msg)])   # +1 for the trailing /
+    mbox.close()
 
     # Show updated message
     _show_mbox(ui, mbox, 0)
@@ -212,11 +221,13 @@ def _show_mbox(ui, mbox, comment):
     if comment >= len(mbox):
         comment = 0
         ui.warn('Comment out of range, showing the issue itself\n')
-    msg = mbox[comment]
+    keys = _order_keys_date(mbox)
+    root = keys[0]
+    msg = mbox[keys[comment]]
     ui.write('='*70 + '\n')
     if comment:
-        ui.write('Subject: %s\n' % mbox[0]['Subject'])
-        ui.write('State: %s\n' % mbox[0]['State'])
+        ui.write('Subject: %s\n' % mbox[root]['Subject'])
+        ui.write('State: %s\n' % mbox[root]['State'])
         ui.write('-'*70 + '\n')
     _write_message(ui, msg, comment)
     ui.write('-'*70 + '\n')
@@ -224,10 +235,12 @@ def _show_mbox(ui, mbox, comment):
     # Read the mailbox into the messages and children dictionaries
     messages = {}
     children = {}
-    for i in xrange(len(mbox)):
-        m = mbox[i]
+    i = 0
+    for k in keys:
+        m = mbox[k]
         messages[m['Message-Id']] = (i,m)
         children.setdefault(m['In-Reply-To'], []).append(m['Message-Id'])
+        i += 1
     children[None] = []                # Safeguard against infinte loop on empty Message-Id
 
     # Iterate over children
@@ -241,6 +254,17 @@ def _show_mbox(ui, mbox, comment):
         index, msg = messages[id]
         ui.write('  '*offset + ('%d: ' % index) + msg['Subject'] + '\n')
     ui.write('-'*70 + '\n')
+
+def _find_root_key(maildir):
+    for k,m in maildir.iteritems():
+        if 'in-reply-to' not in m:
+            return k
+
+def _order_keys_date(mbox):
+    keys = mbox.keys()
+    root = _find_root_key(mbox)
+    keys.sort(lambda k1,k2: -(k1 == root) or cmp(util.parsedate(mbox[k1]['date']), util.parsedate(mbox[k2]['date'])))
+    return keys
 
 def _pretty_list(lst):
     s = ''
