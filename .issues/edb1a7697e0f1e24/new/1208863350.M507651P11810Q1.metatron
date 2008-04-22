@@ -1,0 +1,7 @@
+From: Dmitriy Morozov <morozov@cs.duke.edu>
+Date: Tue, 22 Apr 2008 07:21:57
+State: new
+Subject: Colorize output
+Message-Id: <edb1a7697e0f1e24-0-artemis@metatron>
+
+Allow one to colorize output. Naturally with user-customizable colors.
