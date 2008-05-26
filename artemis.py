@@ -187,7 +187,7 @@ def iupdate(ui, repo, id, **opts):
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
     
-    _create_missing_dirs(os.path.join(repo.root, issues_dir), issue_id)
+    _create_missing_dirs(os.path.join(repo.root, issues_dir), id)
 
     properties = _get_properties(opts['property'])
 
