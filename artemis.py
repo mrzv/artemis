@@ -138,7 +138,6 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
 
     if not id:
         outer.add_header('Message-Id', "<%s-0-artemis@%s>" % (issue_id, socket.gethostname()))
-        root = 0
     else:
         root = keys[0]
         outer.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
@@ -147,14 +146,15 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     repo.add([issue_fn[(len(repo.root)+1):] + '/new/'  + mbox.add(outer)])   # +1 for the trailing /
 
     # Fix properties in the root message
-    msg = mbox[root]
     if properties:
+        root = _find_root_key(mbox)
+        msg = mbox[root]
         for property, value in properties:
             if property in msg:
                 msg.replace_header(property, value)
             else:
                 msg.add_header(property, value)
-    mbox[root] = msg
+        mbox[root] = msg
 
     mbox.close()
 
