@@ -1,4 +1,4 @@
-# Author: Dmitriy Morozov <hg@foxcub.org>, 2007
+# Author: Dmitriy Morozov <hg@foxcub.org>, 2007 -- 2009
         
 """A very simple and lightweight issue tracker for Mercurial."""
 
@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-state = {'new': 'new', 'fixed': 'fixed'}
+state = {'new': 'new', 'fixed': ['fixed', 'resolved']}
 state['default'] = state['new']
 issues_dir = ".issues"
 filter_prefix = ".filter"
@@ -59,13 +59,13 @@ def ilist(ui, repo, **opts):
         property_match = True
         for property,value in properties:
             property_match = property_match and (mbox[root][property] == value)
-        if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() == state['fixed'].upper()): continue
+        if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['fixed']]): continue
 
 
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
         ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
                                           len(mbox)-1,                # number of replies (-1 for self)
-                                          mbox[root]['State'],
+                                          _status_msg(mbox[root]),
                                           mbox[root]['Subject']))
 
 
@@ -93,13 +93,26 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     default_issue_text +=         "Subject: brief description\n\n"
     default_issue_text +=         "Detailed description."
 
-    issue = ui.edit(default_issue_text, user)
-    if issue.strip() == '':
-        ui.warn('Empty issue, ignoring\n')
-        return
-    if issue.strip() == default_issue_text:
-        ui.warn('Unchanged issue text, ignoring\n')
-        return
+    # Get properties, and figure out if we need an explicit comment
+    properties = _get_properties(opts['property'])
+    no_comment = id and properties and opts['no_property_comment']
+
+    # Create the text
+    if not no_comment:
+        issue = ui.edit(default_issue_text, user)
+
+        if issue.strip() == '':
+            ui.warn('Empty issue, ignoring\n')
+            return
+        if issue.strip() == default_issue_text:
+            ui.warn('Unchanged issue text, ignoring\n')
+            return
+    else:
+        # Write down a comment about updated properties
+        properties_subject = ', '.join(['%s=%s' % (property, value) for (property, value) in properties])            
+    
+        issue =     "From: %s\nDate: %s\nSubject: changed properties (%s)\n" % \
+                     (user, util.datestr(format = date_format), properties_subject)
 
     # Create the message
     msg = mailbox.MaildirMessage(issue)
@@ -117,7 +130,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     # else: issue_fn already set
 
     # Add message to the mailbox
-    mbox = mailbox.Maildir(issue_fn)
+    mbox = mailbox.Maildir(issue_fn, factory=mailbox.MaildirMessage)
     keys = _order_keys_date(mbox)
     mbox.lock()
     if id and comment >= len(mbox):
@@ -125,18 +138,31 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
 
     if not id:
         outer.add_header('Message-Id', "<%s-0-artemis@%s>" % (issue_id, socket.gethostname()))
+        root = 0
     else:
         root = keys[0]
         outer.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
         outer.add_header('References', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
         outer.add_header('In-Reply-To', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
     repo.add([issue_fn[(len(repo.root)+1):] + '/new/'  + mbox.add(outer)])   # +1 for the trailing /
+
+    # Fix properties in the root message
+    msg = mbox[root]
+    if properties:
+        for property, value in properties:
+            if property in msg:
+                msg.replace_header(property, value)
+            else:
+                msg.add_header(property, value)
+    mbox[root] = msg
+
     mbox.close()
 
     # If adding issue, add the new mailbox to the repository
     if not id:
         ui.status('Added new issue %s\n' % issue_id)
-
+    else:
+        _show_mbox(ui, mbox, 0)
 
 def ishow(ui, repo, id, comment = 0, **opts):
     """Shows issue ID, or possibly its comment COMMENT"""
@@ -179,51 +205,6 @@ def ishow(ui, repo, id, comment = 0, **opts):
                 fp.write(part.get_payload(decode = True))
                 fp.close()
             counter += 1
-
-
-def iupdate(ui, repo, id, **opts):
-    """Update properties of issue ID"""
-
-    issue, id = _find_issue(ui, repo, id)
-    if not issue: return
-    
-    _create_missing_dirs(os.path.join(repo.root, issues_dir), id)
-
-    properties = _get_properties(opts['property'])
-
-    # Read the issue
-    mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
-    root = _find_root_key(mbox)
-    msg = mbox[root]
-
-    # Fix the properties
-    properties_text = ''
-    for property, value in properties:
-        if property in msg:
-            msg.replace_header(property, value)
-        else:
-            msg.add_header(property, value)
-        properties_text += '%s=%s\n' % (property, value)
-    mbox.lock()
-    mbox[root] = msg
-
-    # Write down a comment about updated properties
-    if properties and not opts['no_property_comment']:
-        user = ui.username()
-        properties_text  =     "From: %s\nDate: %s\nSubject: properties changes (%s)\n\n%s" % \
-                            (user, util.datestr(format = date_format),
-                             _pretty_list(list(set([property for property, value in properties]))),
-                             properties_text)
-        msg = mailbox.mboxMessage(properties_text)
-        msg.add_header('Message-Id', "<%s-%s-artemis@%s>" % (id, _random_id(), socket.gethostname()))
-        msg.add_header('References', mbox[root]['Message-Id'])
-        msg.add_header('In-Reply-To', mbox[root]['Message-Id'])
-        #msg.set_from('artemis', True)
-        repo.add([issue[(len(repo.root)+1):] + '/new/'  + mbox.add(msg)])   # +1 for the trailing /
-    mbox.close()
-
-    # Show updated message
-    _show_mbox(ui, mbox, 0)
 
 
 def _find_issue(ui, repo, id):
@@ -315,12 +296,6 @@ def _order_keys_date(mbox):
     keys.sort(lambda k1,k2: -(k1 == root) or cmp(util.parsedate(mbox[k1]['date']), util.parsedate(mbox[k2]['date'])))
     return keys
 
-def _pretty_list(lst):
-    s = ''
-    for i in lst:
-        s += i + ', '
-    return s[:-2]
-
 def _random_id():
     return "%x" % random.randint(2**63, 2**64-1)
 
@@ -378,6 +353,12 @@ def _attach_files(msg, filenames):
         outer.attach(attachment)
     return outer
 
+def _status_msg(msg):
+    if msg['State'] == 'resolved':
+        return 'resolved=' + msg['resolution']
+    else:
+        return msg['State']
+
 cmdtable = {
     'ilist':    (ilist,
                  [('a', 'all', False,
@@ -389,18 +370,16 @@ cmdtable = {
                  _('hg ilist [OPTIONS]')),
     'iadd':       (iadd, 
                  [('a', 'attach', [],
-                   'attach file(s) (e.g., -a filename1 -a filename2)')], 
-                 _('hg iadd [ID] [COMMENT]')),
+                   'attach file(s) (e.g., -a filename1 -a filename2)'),
+                  ('p', 'property', [],
+                   'update properties (e.g., -p state=fixed)'),
+                  ('n', 'no-property-comment', None,
+                   'do not add a comment about changed properties')], 
+                 _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
                   ('x', 'extract', [], 'extract attachments')],
                  _('hg ishow [OPTIONS] ID [COMMENT]')),
-    'iupdate':    (iupdate,
-                 [('p', 'property', [],
-                   'update properties (e.g., -p state=fixed)'),
-                  ('n', 'no-property-comment', None,
-                   'do not add a comment about changed properties')],
-                 _('hg iupdate [OPTIONS] ID'))
 }
 
 # vim: expandtab
