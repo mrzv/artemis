@@ -282,7 +282,7 @@ def _show_mbox(ui, mbox, comment):
         id,offset = id_stack.pop()
         id_stack += (id in children and map(lambda x: (x, offset+1), reversed(children[id]))) or []
         index, msg = messages[id]
-        ui.write('  '*offset + ('%d: ' % index) + msg['Subject'] + '\n')
+        ui.write('  '*offset + '%d: [%s] %s\n' % (index, util.shortuser(msg['From']), msg['Subject']))
     ui.write('-'*70 + '\n')
 
 def _find_root_key(maildir):
@@ -378,7 +378,7 @@ cmdtable = {
                  _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
-                  ('x', 'extract', [], 'extract attachments')],
+                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)')],
                  _('hg ishow [OPTIONS] ID [COMMENT]')),
 }
 
