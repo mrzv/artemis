@@ -51,22 +51,38 @@ def ilist(ui, repo, **opts):
         else:
             properties += config.items(opts['filter'])
 
-    properties += _get_properties(opts['property'])
+    cmd_properties = _get_properties(opts['property'])
+    list_properties = [p[0] for p in cmd_properties if len(p) == 1]
+    list_properties_dict = {}
+    properties += filter(lambda p: len(p) > 1, cmd_properties)
 
     for issue in issues:
         mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
         root = _find_root_key(mbox)
         property_match = True
         for property,value in properties:
-            property_match = property_match and (mbox[root][property] == value)
+            if value:
+                property_match = property_match and (mbox[root][property] == value)
+            else:
+                property_match = property_match and (property not in mbox[root])
+        
         if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['fixed']]): continue
-
-
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
-        ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
-                                          len(mbox)-1,                # number of replies (-1 for self)
-                                          _status_msg(mbox[root]),
-                                          mbox[root]['Subject']))
+
+        if not list_properties:
+            ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
+                                              len(mbox)-1,                # number of replies (-1 for self)
+                                              _status_msg(mbox[root]),
+                                              mbox[root]['Subject']))
+        else:
+            for lp in list_properties:
+                if lp in mbox[root]:    list_properties_dict.setdefault(lp, set()).add(mbox[root][lp])
+
+    if list_properties:
+        for lp in list_properties_dict.keys():
+            ui.write("%s:\n" % lp)
+            for value in sorted(list_properties_dict[lp]):
+                ui.write("  %s\n" % value)
 
 
 def iadd(ui, repo, id = None, comment = 0, **opts):
@@ -364,7 +380,7 @@ cmdtable = {
                  [('a', 'all', False,
                    'list all issues (by default only those with state new)'),
                   ('p', 'property', [],
-                   'list issues with specific field values (e.g., -p state=fixed)'),
+                   'list issues with specific field values (e.g., -p state=fixed); lists all possible values of a property if no = sign'),
                   ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
                   ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (issues_dir, filter_prefix))],
                  _('hg ilist [OPTIONS]')),
