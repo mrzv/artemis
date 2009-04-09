@@ -196,12 +196,12 @@ def ishow(ui, repo, id, comment = 0, **opts):
         i = 0
         keys = _order_keys_date(mbox) 
         for k in keys:
-            _write_message(ui, mbox[k], i)
+            _write_message(ui, mbox[k], i, skip = opts['skip'])
             ui.write('-'*70 + '\n')
             i += 1
         return
 
-    _show_mbox(ui, mbox, comment)
+    _show_mbox(ui, mbox, comment, skip = opts['skip'])
 
     if opts['extract']:
         attachment_numbers = map(int, opts['extract'])
@@ -241,10 +241,10 @@ def _find_issue(ui, repo, id):
 def _get_properties(property_list):
     return [p.split('=') for p in property_list]
 
-def _write_message(ui, message, index = 0):
+def _write_message(ui, message, index = 0, skip = None):
     if index: ui.write("Comment: %d\n" % index)
     if ui.verbose:
-        ui.write(message.as_string().strip() + '\n')
+        _show_text(ui, message.as_string().strip(), skip)
     else:
         if 'From' in message: ui.write('From: %s\n' % message['From'])
         if 'Date' in message: ui.write('Date: %s\n' % message['Date'])
@@ -256,13 +256,20 @@ def _write_message(ui, message, index = 0):
             maintype, subtype = ctype.split('/', 1)
             if maintype == 'multipart': continue
             if ctype == 'text/plain':
-                ui.write('\n' + part.get_payload().strip() + '\n')
+                ui.write('\n')
+                _show_text(ui, part.get_payload().strip(), skip)
             else:
                 filename = part.get_filename()
                 ui.write('\n' + '%d: Attachment [%s, %s]: %s' % (counter, ctype, _humanreadable(len(part.get_payload())), filename) + '\n')
                 counter += 1
 
-def _show_mbox(ui, mbox, comment):
+def _show_text(ui, text, skip = None):
+    for line in text.splitlines():
+        if not skip or not line.startswith(skip):
+            ui.write(line + '\n')
+    ui.write('\n')
+
+def _show_mbox(ui, mbox, comment, **opts):
     # Output the issue (or comment)
     if comment >= len(mbox):
         comment = 0
@@ -275,7 +282,7 @@ def _show_mbox(ui, mbox, comment):
         ui.write('Subject: %s\n' % mbox[root]['Subject'])
         ui.write('State: %s\n' % mbox[root]['State'])
         ui.write('-'*70 + '\n')
-    _write_message(ui, msg, comment)
+    _write_message(ui, msg, comment, skip = ('skip' in opts) and opts['skip'])
     ui.write('-'*70 + '\n')
 
     # Read the mailbox into the messages and children dictionaries
@@ -394,6 +401,7 @@ cmdtable = {
                  _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
+                  ('s', 'skip', '>', 'skip lines starting with a substring'),
                   ('x', 'extract', [], 'extract attachments (provide attachment number as argument)')],
                  _('hg ishow [OPTIONS] ID [COMMENT]')),
 }
