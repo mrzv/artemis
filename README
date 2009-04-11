@@ -10,7 +10,15 @@ Various properties of an issue are stored in the headers of that message.
 .. _Mercurial:      http://www.selenic.com/mercurial/
 .. _Maildir:        http://en.wikipedia.org/wiki/Maildir
 
-Artemis' home is at http://hg.mrzv.org/Artemis. 
+One can obtain Artemis by cloning its repository:
+
+.. parsed-literal::
+
+    hg clone http://hg.mrzv.org/Artemis/
+
+or downloading the entire `repository as a tarball`_.
+
+.. _`repository as a tarball`:  http://hg.mrzv.org/Artemis/archive/tip.tar.gz
 
 
 Setup
