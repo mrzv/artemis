@@ -1,0 +1,172 @@
+Artemis
+=======
+
+Artemis is a lightweight distributed issue tracking extension for Mercurial_.
+
+Individual issues are stored in directories in an ``.issues`` subdirectory. Each
+one is a Maildir_ and each one is assumed to have a single root message.
+Various properties of an issue are stored in the headers of that message.
+
+.. _Mercurial:      http://www.selenic.com/mercurial/
+.. _Maildir:        http://en.wikipedia.org/wiki/Maildir
+
+Artemis' home is at http://hg.mrzv.org/Artemis. 
+
+
+Setup
+-----
+
+In the ``[extensions]`` section of your ``~/.hgrc`` add::
+    
+    artemis = /path/to/artemis.py
+
+
+Example
+-------
+
+Create an issue::
+
+    # hg iadd
+    ... enter some text in an editor ...
+    Added new issue 907ab57e04502afd 
+
+    # hg ilist
+    907ab57e04502afd (  0) [new]: New issue
+
+    # hg ishow 907
+    ======================================================================
+    From: ...
+    Date: ...
+    Subject: New issue
+    State: new
+
+    Detailed description.
+    
+    ----------------------------------------------------------------------
+
+Add a comment to the issue::
+    
+    # hg iadd 907
+    ... enter the comment text
+    ======================================================================
+    From: ...
+    [snip]
+    Detailed description.
+    
+    ----------------------------------------------------------------------
+    Comments:
+      1: [dmitriy] Some comment
+    ----------------------------------------------------------------------
+
+And a comment to the comment::
+
+    # hg iadd 907 1
+    ... enter the comment text ...
+    ======================================================================
+    From: ...
+    [snip]
+    Detailed description.
+    
+    ----------------------------------------------------------------------
+    Comments:
+      1: [dmitriy] Some comment
+        2: [dmitriy] Comment on a comment
+    ----------------------------------------------------------------------
+
+Close the issue::
+
+    # hg iadd 907 -p state=resolved -p resolution=fixed -n
+    ======================================================================
+    From: ...
+    [snip]
+    Detailed description.
+    
+    ----------------------------------------------------------------------
+    Comments:
+      1: [dmitriy] Some comment
+        2: [dmitriy] Comment on a comment
+      3: [dmitriy] changed properties (state=resolved, resolution=fixed)
+    ----------------------------------------------------------------------
+
+No more new issues, and one resolved issue::
+
+    # hg ilist
+    # hg ilist -a
+    907ab57e04502afd (  3) [resolved=fixed]: New issue
+
+The fact that issues are Maildirs, allows one to look at them in, for example,
+``mutt`` with predictable results::
+
+    mutt -Rf .issues/907ab57e04502afd
+
+Commands
+--------
+
+`iadd` ``[ID] [COMMENT]``
+    Add an issue, or a comment to an existing issue or comment. The comment is
+    recorded as a reply to the particular message. `iadd` is the only command
+    that changes the state of the repository (by adding the new issue files to
+    the list of tracked files or updating some of them), however, it does not
+    perform an actual commit.
+
+    `-p`, `--property`
+        update a property of the issue ``ID``, e.g. ``-p state=resolved -p resolution=fixed``
+
+    `-a`, `--attach`
+        attach a file to the message, e.g. ``-a filename1 -a filename2``
+
+    `-n`, `--no-property-comment`
+        do not launch an editor to record a comment (useful if only changing
+        properties)
+
+
+`ilist`
+    List issues.
+
+    `-a`, `--all`
+        list all issues (not just the `new` ones)
+
+    `-p`, `--property`
+        list issues with specific property values, e.g. 
+        ``-p state=resolved -p category=documentation``;
+        if no property value is provided (e.g. ``-p category``), lists all
+        possible values for that property (among the issues that satisfy the
+        rest of the criteria)
+
+    `-d`, `--date`
+        restrict to issues matching the given date, e.g. ``-d ">1/1/2008"``
+
+    `-f`, `--filter`
+        restrict to a predefined filter, see Filters_ below
+   
+
+`ishow` ``[ID] [COMMENT]``
+    Show an issue or a comment.
+
+    `-a`, `--all`
+        list all comments to an issue (i.e. not just a single message, and a
+        thread of subjects of its replies)
+
+    `-s`, `--skip`
+        in the output skip lines of the messages starting with the given
+        substring, defaults to ``>``
+
+    `-x`, `--extract`
+        extract attachments (given their numbers)
+
+
+Filters
+-------
+
+Artemis scans all files of the form ``.issues/.filter*``, and processes them as
+config files. Section names become filter names, and the individual settings
+become properties. For example the following::
+
+    [olddoc]
+    category=documentation
+    state=resolved
+
+placed in a file ``.issues/.filter`` creates a filter `olddoc` which can be
+invoked with the `ilist` command::
+
+    hg ilist -f olddoc

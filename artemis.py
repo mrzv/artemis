@@ -47,7 +47,7 @@ def ilist(ui, repo, **opts):
         config = ConfigParser.SafeConfigParser()
         config.read(filters)
         if not config.has_section(opts['filter']):
-            ui.warning('No filter %s defined\n', opts['filter'])
+            ui.write('No filter %s defined\n' % opts['filter'])
         else:
             properties += config.items(opts['filter'])
 
