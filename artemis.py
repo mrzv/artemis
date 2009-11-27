@@ -185,9 +185,13 @@ def ishow(ui, repo, id, comment = 0, **opts):
 
     comment = int(comment)
     issue, id = _find_issue(ui, repo, id)
-    if not issue: return
+    if not issue:
+        return ui.warn('No such issue\n')
 
     _create_missing_dirs(os.path.join(repo.root, issues_dir), issue)
+
+    if opts.get('mutt'):
+        return util.system('mutt -R -f %s' % issue)
 
     mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
 
@@ -402,7 +406,8 @@ cmdtable = {
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
                   ('s', 'skip', '>', 'skip lines starting with a substring'),
-                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)')],
+                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)'),
+                  ('', 'mutt', False, 'use mutt to show issue')],
                  _('hg ishow [OPTIONS] ID [COMMENT]')),
 }
 
