@@ -1,0 +1,12 @@
+From: Alexander Solovyov <piranha@piranha.org.ua>
+Date: Sat, 28 Nov 2009 00:33:33
+State: new
+Subject: iadd should commit on finish
+Message-Id: <f09aeee4b1552679-0-artemis@gto.home>
+
+Actually there is two possibilities - one is to leave behavior as is and just
+add '--commit' option, and another is to commit after finishing and add
+'--no-commit' option.
+
+I think that second option is better as it's seems usual to commit immediately
+after issue change. 
