@@ -1,0 +1,8 @@
+From: Alexander Solovyov <piranha@piranha.org.ua>
+Date: Sat, 28 Nov 2009 00:46:52
+State: new
+Subject: issues are created in local date without timezone
+Message-Id: <fcdf8a97e633be4c-0-artemis@gto.home>
+
+Timezone is necessary to have issues syncronized in time between different time
+zones. ;-)
