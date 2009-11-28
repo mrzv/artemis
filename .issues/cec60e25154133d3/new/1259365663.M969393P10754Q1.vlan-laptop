@@ -22,9 +22,9 @@ All the tickets of John Smith by specifying his email:
 
     $ hg ilist -p to=~smith@example.com
 
-All the tickes of high priority (i. e. of `critical` priority or not prioritized
-ones), notice that the logical "or" should be used for joining the same
-properties:
+All the tickets of high priority (i. e. of `critical` priority or not
+prioritized ones), notice that the logical "or" should be used for joining the
+same properties:
 
-    $ hg ilist -p priority!=minor -p priority!=trivial
+    $ hg ilist -p priority=critical -p priority!=''
 
