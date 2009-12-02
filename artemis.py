@@ -112,9 +112,17 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     # Get properties, and figure out if we need an explicit comment
     properties = _get_properties(opts['property'])
     no_comment = id and properties and opts['no_property_comment']
+    message = opts['message']
 
     # Create the text
-    if not no_comment:
+    if message:
+        if not id:
+            state_str = 'State: %s\n' % state['default']
+        else:
+            state_str = ''
+        issue = "From: %s\nDate: %s\nSubject: %s\n%s" % \
+                (user, util.datestr(format=date_format), message, state_str)
+    elif not no_comment:
         issue = ui.edit(default_issue_text, user)
 
         if issue.strip() == '':
@@ -401,7 +409,9 @@ cmdtable = {
                   ('p', 'property', [],
                    'update properties (e.g., -p state=fixed)'),
                   ('n', 'no-property-comment', None,
-                   'do not add a comment about changed properties')],
+                   'do not add a comment about changed properties'),
+                  ('m', 'message', '',
+                   'use <text> as an issue subject')],
                  _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
