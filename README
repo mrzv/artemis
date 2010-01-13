@@ -3,9 +3,10 @@ Artemis
 
 Artemis is a lightweight distributed issue tracking extension for Mercurial_.
 
-Individual issues are stored in directories in an ``.issues`` subdirectory. Each
-one is a Maildir_ and each one is assumed to have a single root message.
-Various properties of an issue are stored in the headers of that message.
+Individual issues are stored in directories in an ``.issues`` subdirectory
+(overridable in a config file).  Each one is a Maildir_ and each one is assumed
+to have a single root message.  Various properties of an issue are stored in the
+headers of that message.
 
 .. _Mercurial:      http://www.selenic.com/mercurial/
 .. _Maildir:        http://en.wikipedia.org/wiki/Maildir
@@ -27,6 +28,12 @@ Setup
 In the ``[extensions]`` section of your ``~/.hgrc`` add::
     
     artemis = /path/to/artemis.py
+
+Optionally, provide a section ``[artemis]``, and specify an alternative path for
+the issues subdirectory (instead of the default ``.issues``)::
+
+    [artemis]
+    issues = _issues
 
 
 Example

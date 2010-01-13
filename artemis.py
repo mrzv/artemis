@@ -17,7 +17,7 @@ from email.mime.text import MIMEText
 
 state = {'new': 'new', 'fixed': ['fixed', 'resolved']}
 state['default'] = state['new']
-issues_dir = ".issues"
+default_issues_dir = ".issues"
 filter_prefix = ".filter"
 date_format = '%a, %d %b %Y %H:%M:%S'
 maildir_dirs = ['new','cur','tmp']
@@ -34,6 +34,7 @@ def ilist(ui, repo, **opts):
         match_date, date_match = True, util.matchdate(opts['date'])
 
     # Find issues
+    issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     issues_path = os.path.join(repo.root, issues_dir)
     if not os.path.exists(issues_path): return
 
@@ -91,6 +92,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     comment = int(comment)
 
     # First, make sure issues have a directory
+    issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     issues_path = os.path.join(repo.root, issues_dir)
     if not os.path.exists(issues_path): os.mkdir(issues_path)
 
@@ -187,6 +189,7 @@ def ishow(ui, repo, id, comment = 0, **opts):
     issue, id = _find_issue(ui, repo, id)
     if not issue: return
     
+    issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     _create_missing_dirs(os.path.join(repo.root, issues_dir), issue)
 
     mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
@@ -224,6 +227,7 @@ def ishow(ui, repo, id, comment = 0, **opts):
 
 
 def _find_issue(ui, repo, id):
+    issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     issues_path = os.path.join(repo.root, issues_dir)
     if not os.path.exists(issues_path): return False
 
@@ -389,7 +393,7 @@ cmdtable = {
                   ('p', 'property', [],
                    'list issues with specific field values (e.g., -p state=fixed); lists all possible values of a property if no = sign'),
                   ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
-                  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (issues_dir, filter_prefix))],
+                  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (default_issues_dir, filter_prefix))],
                  _('hg ilist [OPTIONS]')),
     'iadd':       (iadd, 
                  [('a', 'attach', [],
