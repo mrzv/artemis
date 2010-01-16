@@ -1,0 +1,30 @@
+From: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
+Date: Sat, 28 Nov 2009 02:30:08
+State: new
+Subject: Add more filter expressions: ~=, !=, !~=
+Message-Id: <cec60e25154133d3-0-artemis@vlan-laptop>
+
+At this moment only exact `=` is supported in filters.
+
+I propose adding the following constructs:
+
+* `~=` for "contains"
+* `!~=` for "does not contain"
+* `!=` for "is not equal to"
+
+Some examples of filters that use these constructs are provided below.
+
+All the tickes by John Smith that are not fixed:
+
+    $ hg ilist -p from~=Smith -p state!=fixed
+
+All the tickets of John Smith by specifying his email:
+
+    $ hg ilist -p to=~smith@example.com
+
+All the tickets of high priority (i. e. of `critical` priority or not
+prioritized ones), notice that the logical "or" should be used for joining the
+same properties:
+
+    $ hg ilist -p priority=critical -p priority!=''
+

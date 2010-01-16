@@ -134,6 +134,9 @@ Commands
         do not launch an editor to record a comment (useful if only changing
         properties)
 
+    `-m`, --message`
+        use ``text`` as an issue subject
+
 
 `ilist`
     List issues.
@@ -168,6 +171,9 @@ Commands
 
     `-x`, `--extract`
         extract attachments (given their numbers)
+
+    `--mutt`
+        use ``mutt`` to show issue
 
 
 Filters

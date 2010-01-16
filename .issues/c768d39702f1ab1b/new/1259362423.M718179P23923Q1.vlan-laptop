@@ -1,0 +1,14 @@
+From: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
+Date: Sat, 28 Nov 2009 01:45:30
+State: resolved
+Subject: Add --mutt to ilist
+Message-Id: <c768d39702f1ab1b-0-artemis@vlan-laptop>
+To: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
+resolution: fixed
+
+It would be nice to see a list of selected issues (e. g. via `ilist -f`) as a
+list of regular email threads in `mutt`.
+
+One way to implement this is to create a new Maildir of temporary symbolic links
+to all the issue files being selected via `ilist`.
+

@@ -1,5 +1,5 @@
 # Author: Dmitriy Morozov <hg@foxcub.org>, 2007 -- 2009
-        
+
 """A very simple and lightweight issue tracker for Mercurial."""
 
 from mercurial import hg, util
@@ -66,7 +66,7 @@ def ilist(ui, repo, **opts):
                 property_match = property_match and (mbox[root][property] == value)
             else:
                 property_match = property_match and (property not in mbox[root])
-        
+
         if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['fixed']]): continue
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
 
@@ -114,9 +114,17 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     # Get properties, and figure out if we need an explicit comment
     properties = _get_properties(opts['property'])
     no_comment = id and properties and opts['no_property_comment']
+    message = opts['message']
 
     # Create the text
-    if not no_comment:
+    if message:
+        if not id:
+            state_str = 'State: %s\n' % state['default']
+        else:
+            state_str = ''
+        issue = "From: %s\nDate: %s\nSubject: %s\n%s" % \
+                (user, util.datestr(format=date_format), message, state_str)
+    elif not no_comment:
         issue = ui.edit(default_issue_text, user)
 
         if issue.strip() == '':
@@ -127,8 +135,8 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
             return
     else:
         # Write down a comment about updated properties
-        properties_subject = ', '.join(['%s=%s' % (property, value) for (property, value) in properties])            
-    
+        properties_subject = ', '.join(['%s=%s' % (property, value) for (property, value) in properties])
+
         issue =     "From: %s\nDate: %s\nSubject: changed properties (%s)\n" % \
                      (user, util.datestr(format = date_format), properties_subject)
 
@@ -187,17 +195,21 @@ def ishow(ui, repo, id, comment = 0, **opts):
 
     comment = int(comment)
     issue, id = _find_issue(ui, repo, id)
-    if not issue: return
+    if not issue:
+        return ui.warn('No such issue\n')
     
     issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     _create_missing_dirs(os.path.join(repo.root, issues_dir), issue)
+
+    if opts.get('mutt'):
+        return util.system('mutt -R -f %s' % issue)
 
     mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
 
     if opts['all']:
         ui.write('='*70 + '\n')
         i = 0
-        keys = _order_keys_date(mbox) 
+        keys = _order_keys_date(mbox)
         for k in keys:
             _write_message(ui, mbox[k], i, skip = opts['skip'])
             ui.write('-'*70 + '\n')
@@ -395,18 +407,21 @@ cmdtable = {
                   ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
                   ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (default_issues_dir, filter_prefix))],
                  _('hg ilist [OPTIONS]')),
-    'iadd':       (iadd, 
+    'iadd':       (iadd,
                  [('a', 'attach', [],
                    'attach file(s) (e.g., -a filename1 -a filename2)'),
                   ('p', 'property', [],
                    'update properties (e.g., -p state=fixed)'),
                   ('n', 'no-property-comment', None,
-                   'do not add a comment about changed properties')], 
+                   'do not add a comment about changed properties'),
+                  ('m', 'message', '',
+                   'use <text> as an issue subject')],
                  _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),
                   ('s', 'skip', '>', 'skip lines starting with a substring'),
-                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)')],
+                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)'),
+                  ('', 'mutt', False, 'use mutt to show issue')],
                  _('hg ishow [OPTIONS] ID [COMMENT]')),
 }
 
