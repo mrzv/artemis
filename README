@@ -134,7 +134,7 @@ Commands
         do not launch an editor to record a comment (useful if only changing
         properties)
 
-    `-m`, --message`
+    `-m`, `--message`
         use ``text`` as an issue subject
 
 

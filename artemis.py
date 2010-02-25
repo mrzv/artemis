@@ -19,7 +19,7 @@ state = {'new': 'new', 'fixed': ['fixed', 'resolved']}
 state['default'] = state['new']
 default_issues_dir = ".issues"
 filter_prefix = ".filter"
-date_format = '%a, %d %b %Y %H:%M:%S'
+date_format = '%a, %d %b %Y %H:%M:%S %1%2'
 maildir_dirs = ['new','cur','tmp']
 
 
