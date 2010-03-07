@@ -1,0 +1,18 @@
+From: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
+Date: Mon, 08 Mar 2010 01:23:25 +0300
+State: new
+Subject: KeyError while accessing an empty Maildir
+Message-Id: <cf0d1e2ca226848d-0-artemis@vlan-laptop>
+
+If a Maildir contains no message files, `hg ilist` raises the following
+exception:
+
+    KeyError: 'No message with key: None'
+
+This can happen if one updates his repository to an early revision where there
+was less issues than it is now. Mercurial doesn't delete empty directories, so
+an issue from the future is represented a Maildir with no messages.
+
+The problem is in handling the result of `_find_root_key`, which will be `None`
+in that case.
+
