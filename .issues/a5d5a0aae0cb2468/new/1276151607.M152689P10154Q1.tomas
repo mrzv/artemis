@@ -1,0 +1,11 @@
+From: "Tomas Zeman <tzeman@volny.cz>"
+Date: Thu, 10 Jun 2010 08:31:23 +0200
+State: new
+Subject: Attachments should be stored without path
+Message-Id: <a5d5a0aae0cb2468-0-artemis@tomas>
+
+Attachments are stored with their path causing attachment extract operation to
+override the original file.
+
+That can lead to disaster if e.g. one uses absolute path and file like
+/etc/passwd etc.
