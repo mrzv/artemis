@@ -60,6 +60,7 @@ def ilist(ui, repo, **opts):
     for issue in issues:
         mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
         root = _find_root_key(mbox)
+        if not root: continue
         property_match = True
         for property,value in properties:
             if value:

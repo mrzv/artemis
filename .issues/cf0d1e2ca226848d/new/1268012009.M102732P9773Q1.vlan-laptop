@@ -1,8 +1,9 @@
 From: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
 Date: Mon, 08 Mar 2010 01:23:25 +0300
-State: new
+State: resolved
 Subject: KeyError while accessing an empty Maildir
 Message-Id: <cf0d1e2ca226848d-0-artemis@vlan-laptop>
+resolution: fixed
 
 If a Maildir contains no message files, `hg ilist` raises the following
 exception:

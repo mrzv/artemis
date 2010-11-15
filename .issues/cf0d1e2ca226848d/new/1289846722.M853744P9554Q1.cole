@@ -1,0 +1,8 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Mon, 15 Nov 2010 10:44:57 -0800
+Subject: ilist ignores empty Maildirs
+Message-Id: <cf0d1e2ca226848d-c95c687999e65b87-artemis@cole>
+References: <cf0d1e2ca226848d-0-artemis@vlan-laptop>
+In-Reply-To: <cf0d1e2ca226848d-0-artemis@vlan-laptop>
+
+If _find_root_key() returns None on a directory, ilist will ignore it.
