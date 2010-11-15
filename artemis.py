@@ -185,6 +185,9 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
 
     mbox.close()
 
+    if opts['commit']:
+        commands.commit(ui, repo, issue_fn)
+
     # If adding issue, add the new mailbox to the repository
     if not id:
         ui.status('Added new issue %s\n' % issue_id)
@@ -416,7 +419,9 @@ cmdtable = {
                   ('n', 'no-property-comment', None,
                    'do not add a comment about changed properties'),
                   ('m', 'message', '',
-                   'use <text> as an issue subject')],
+                   'use <text> as an issue subject'),
+                  ('c', 'commit', False,
+                   'perform a commit after the addition')],
                  _('hg iadd [OPTIONS] [ID] [COMMENT]')),
     'ishow':      (ishow,
                  [('a', 'all', None, 'list all comments'),

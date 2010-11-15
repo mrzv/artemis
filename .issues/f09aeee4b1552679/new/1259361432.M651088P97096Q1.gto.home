@@ -1,8 +1,9 @@
 From: Alexander Solovyov <piranha@piranha.org.ua>
 Date: Sat, 28 Nov 2009 00:33:33
-State: new
+State: resolved
 Subject: iadd should commit on finish
 Message-Id: <f09aeee4b1552679-0-artemis@gto.home>
+resolution: fixed
 
 Actually there is two possibilities - one is to leave behavior as is and just
 add '--commit' option, and another is to commit after finishing and add

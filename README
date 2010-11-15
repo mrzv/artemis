@@ -122,7 +122,7 @@ Commands
     recorded as a reply to the particular message. `iadd` is the only command
     that changes the state of the repository (by adding the new issue files to
     the list of tracked files or updating some of them), however, it does not
-    perform an actual commit.
+    perform an actual commit unless explicitly asked to do so.
 
     `-p`, `--property`
         update a property of the issue ``ID``, e.g. ``-p state=resolved -p resolution=fixed``
@@ -136,6 +136,10 @@ Commands
 
     `-m`, `--message`
         use ``text`` as an issue subject
+
+    `-c`, `--commit`
+        commit the issue after the addition (all changes to the issue will be
+        committed)
 
 
 `ilist`

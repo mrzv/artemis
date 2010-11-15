@@ -1,0 +1,9 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Mon, 15 Nov 2010 10:37:43 -0800
+Subject: Added --commit option to iadd
+Message-Id: <f09aeee4b1552679-bd15fe2a81404d2e-artemis@cole>
+References: <f09aeee4b1552679-0-artemis@gto.home>
+In-Reply-To: <f09aeee4b1552679-0-artemis@gto.home>
+
+The user can explicitly request iadd to commit the entire issue after iadd
+finishes.
