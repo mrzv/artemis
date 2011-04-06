@@ -1,0 +1,11 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Tue, 05 Apr 2011 18:12:28 -0700
+State: new
+Subject: Add --import option to iadd
+Message-Id: <e7c56580805d0cbb-0-artemis@vine>
+
+It should be possible to import an email message (either from a file or stdin)
+by passing --import option to iadd. If no ID is given, treat the email as a new
+bug (i.e. just generate a random id); if an ID is given, append the message to
+that Maildir. Need to decide what to do if the message does not fit into the
+hierarchy in the latter case.
