@@ -14,6 +14,8 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from    termcolor       import colored
+
 
 state = {'new': 'new', 'fixed': ['fixed', 'resolved']}
 state['default'] = state['new']
@@ -36,6 +38,8 @@ def ilist(ui, repo, **opts):
     if opts['order']:
         order = opts['order']
 
+    # Colors
+    colors = _read_colors(ui)
 
     # Find issues
     issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
@@ -61,7 +65,7 @@ def ilist(ui, repo, **opts):
     list_properties_dict = {}
     properties += filter(lambda p: len(p) > 1, cmd_properties)
 
-    subjects = []
+    summaries = []
     for issue in issues:
         mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
         root = _find_root_key(mbox)
@@ -77,18 +81,15 @@ def ilist(ui, repo, **opts):
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
 
         if not list_properties:
-            subjects.append(("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
-                                                      len(mbox)-1,                # number of replies (-1 for self)
-                                                      _status_msg(mbox[root]),
-                                                      mbox[root]['Subject']),
-                             _find_mbox_date(mbox, root, order)))
+            summaries.append((_summary_line(mbox, root, issue[len(issues_path)+1:], colors),     # +1 for trailing /
+                              _find_mbox_date(mbox, root, order)))
         else:
             for lp in list_properties:
                 if lp in mbox[root]:    list_properties_dict.setdefault(lp, set()).add(mbox[root][lp])
 
     if not list_properties:
-        subjects.sort(lambda (s1,d1),(s2,d2): cmp(d2,d1))
-        for s,d in subjects:
+        summaries.sort(lambda (s1,d1),(s2,d2): cmp(d2,d1))
+        for s,d in summaries:
             ui.write(s)
     else:
         for lp in list_properties_dict.keys():
@@ -420,6 +421,35 @@ def _status_msg(msg):
         return 'resolved=' + msg['resolution']
     else:
         return msg['State']
+
+def _read_colors(ui):
+    colors = {}
+    # defaults
+    colors['new.color']             = 'red'
+    colors['new.on_color']          = 'on_grey'
+    colors['new.attrs']             = 'bold'
+    colors['resolved.color']        = 'white'
+    colors['resolved.on_color']     = ''
+    colors['resolved.attrs']        = ''
+    for v in colors:
+        colors[v] = ui.config('artemis', v, colors[v])
+        if v.endswith('attrs'): colors[v] = colors[v].split()
+    return colors
+
+def _color_summary(line, msg, colors):
+    if msg['State'] == 'new':
+        return colored(line, colors['new.color'],      attrs = colors['new.attrs'])
+    elif msg['State'] in state['fixed']:
+        return colored(line, colors['resolved.color'], attrs = colors['resolved.attrs'])
+    else:
+        return line
+
+def _summary_line(mbox, root, issue, colors):
+    line = "%s (%3d) [%s]: %s\n" % (issue,
+                                    len(mbox)-1,                # number of replies (-1 for self)
+                                    _status_msg(mbox[root]),
+                                    mbox[root]['Subject'])
+    return _color_summary(line, mbox[root], colors)
 
 cmdtable = {
     'ilist':    (ilist,

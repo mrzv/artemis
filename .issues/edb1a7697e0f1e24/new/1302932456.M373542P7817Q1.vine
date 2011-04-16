@@ -1,0 +1,11 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Fri, 15 Apr 2011 22:35:57 -0700
+Subject: More generic color selection
+Message-Id: <edb1a7697e0f1e24-b3d7d7d90300e66a-artemis@vine>
+References: <edb1a7697e0f1e24-0-artemis@metatron>
+In-Reply-To: <edb1a7697e0f1e24-0-artemis@metatron>
+
+Right now the color criteria are hard-coded: state is new vs fixed.  This
+selection should be more generic. Instead of providing just two possible color
+styles in the config file, the user should be able to specify colors for
+arbitrary states, maybe even more general selection based on other properties.
