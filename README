@@ -27,7 +27,7 @@ Setup
 
 In the ``[extensions]`` section of your ``~/.hgrc`` add::
 
-    artemis = /path/to/artemis.py
+    artemis = /path/to/Artemis/artemis
 
 Optionally, provide a section ``[artemis]``, and specify an alternative path for
 the issues subdirectory (instead of the default ``.issues``)::
