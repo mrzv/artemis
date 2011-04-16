@@ -1,8 +1,9 @@
 From: Andrey Vlasovskikh <andrey.vlasovskikh@gmail.com>
 Date: Sat, 28 Nov 2009 00:45:23
-State: new
+State: resolved
 Subject: Results of ilist appear to be unsorted
 Message-Id: <82aa4838dbeb6254-0-artemis@vlan-laptop>
+resolution: fixed
 
 I guess the results of `hg ilist` are listed in the same order as issues'
 directory names returned by `glob.glob`.

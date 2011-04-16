@@ -32,6 +32,10 @@ def ilist(ui, repo, **opts):
     match_date, date_match = False, lambda x: True
     if opts['date']:
         match_date, date_match = True, util.matchdate(opts['date'])
+    order = 'new'
+    if opts['order']:
+        order = opts['order']
+
 
     # Find issues
     issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
@@ -57,6 +61,7 @@ def ilist(ui, repo, **opts):
     list_properties_dict = {}
     properties += filter(lambda p: len(p) > 1, cmd_properties)
 
+    subjects = []
     for issue in issues:
         mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
         root = _find_root_key(mbox)
@@ -72,15 +77,20 @@ def ilist(ui, repo, **opts):
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
 
         if not list_properties:
-            ui.write("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
-                                              len(mbox)-1,                # number of replies (-1 for self)
-                                              _status_msg(mbox[root]),
-                                              mbox[root]['Subject']))
+            subjects.append(("%s (%3d) [%s]: %s\n" % (issue[len(issues_path)+1:], # +1 for trailing /
+                                                      len(mbox)-1,                # number of replies (-1 for self)
+                                                      _status_msg(mbox[root]),
+                                                      mbox[root]['Subject']),
+                             _find_mbox_date(mbox, root, order)))
         else:
             for lp in list_properties:
                 if lp in mbox[root]:    list_properties_dict.setdefault(lp, set()).add(mbox[root][lp])
 
-    if list_properties:
+    if not list_properties:
+        subjects.sort(lambda (s1,d1),(s2,d2): cmp(d2,d1))
+        for s,d in subjects:
+            ui.write(s)
+    else:
         for lp in list_properties_dict.keys():
             ui.write("%s:\n" % lp)
             for value in sorted(list_properties_dict[lp]):
@@ -202,7 +212,7 @@ def ishow(ui, repo, id, comment = 0, **opts):
     issue, id = _find_issue(ui, repo, id)
     if not issue:
         return ui.warn('No such issue\n')
-    
+
     issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
     _create_missing_dirs(os.path.join(repo.root, issues_dir), issue)
 
@@ -340,6 +350,14 @@ def _order_keys_date(mbox):
     keys.sort(lambda k1,k2: -(k1 == root) or cmp(util.parsedate(mbox[k1]['date']), util.parsedate(mbox[k2]['date'])))
     return keys
 
+def _find_mbox_date(mbox, root, order):
+    if order == 'latest':
+        keys = _order_keys_date(mbox)
+        msg = mbox[keys[-1]]
+    else:   # new
+        msg = mbox[root]
+    return util.parsedate(msg['date'])
+
 def _random_id():
     return "%x" % random.randint(2**63, 2**64-1)
 
@@ -409,6 +427,7 @@ cmdtable = {
                    'list all issues (by default only those with state new)'),
                   ('p', 'property', [],
                    'list issues with specific field values (e.g., -p state=fixed); lists all possible values of a property if no = sign'),
+                  ('o', 'order', 'new', 'order of the issues; choices: "new" (date submitted), "latest" (date of the last message)'),
                   ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
                   ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (default_issues_dir, filter_prefix))],
                  _('hg ilist [OPTIONS]')),

@@ -26,7 +26,7 @@ Setup
 -----
 
 In the ``[extensions]`` section of your ``~/.hgrc`` add::
-    
+
     artemis = /path/to/artemis.py
 
 Optionally, provide a section ``[artemis]``, and specify an alternative path for
@@ -43,7 +43,7 @@ Create an issue::
 
     # hg iadd
     ... enter some text in an editor ...
-    Added new issue 907ab57e04502afd 
+    Added new issue 907ab57e04502afd
 
     # hg ilist
     907ab57e04502afd (  0) [new]: New issue
@@ -56,18 +56,18 @@ Create an issue::
     State: new
 
     Detailed description.
-    
+
     ----------------------------------------------------------------------
 
 Add a comment to the issue::
-    
+
     # hg iadd 907
     ... enter the comment text
     ======================================================================
     From: ...
     [snip]
     Detailed description.
-    
+
     ----------------------------------------------------------------------
     Comments:
       1: [dmitriy] Some comment
@@ -81,7 +81,7 @@ And a comment to the comment::
     From: ...
     [snip]
     Detailed description.
-    
+
     ----------------------------------------------------------------------
     Comments:
       1: [dmitriy] Some comment
@@ -95,7 +95,7 @@ Close the issue::
     From: ...
     [snip]
     Detailed description.
-    
+
     ----------------------------------------------------------------------
     Comments:
       1: [dmitriy] Some comment
@@ -149,18 +149,22 @@ Commands
         list all issues (not just the `new` ones)
 
     `-p`, `--property`
-        list issues with specific property values, e.g. 
+        list issues with specific property values, e.g.
         ``-p state=resolved -p category=documentation``;
         if no property value is provided (e.g. ``-p category``), lists all
         possible values for that property (among the issues that satisfy the
         rest of the criteria)
+
+    `-o`, `--order`
+        order of the issues; choices: "new" (date submitted), "latest" (date of
+        the most recent message)
 
     `-d`, `--date`
         restrict to issues matching the given date, e.g. ``-d ">1/1/2008"``
 
     `-f`, `--filter`
         restrict to a predefined filter, see Filters_ below
-   
+
 
 `ishow` ``[ID] [COMMENT]``
     Show an issue or a comment.
