@@ -1,0 +1,18 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Fri, 15 Apr 2011 22:54:20 -0700
+State: new
+Subject: State annotations
+Message-Id: <c257b7f62fae9087-0-artemis@vine>
+
+Make state annotations more generic. Right now, only "resolved" state lists
+the contents of the property resolution, i.e.
+
+  State: resolved
+  resolution: fixed
+
+shows up as
+
+  ... [resolved=fixed] ...
+
+in the issue list. The user should be able to configure this behavior for other
+states as well.

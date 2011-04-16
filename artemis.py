@@ -17,8 +17,10 @@ from email.mime.text import MIMEText
 from    termcolor       import colored
 
 
-state = {'new': 'new', 'fixed': ['fixed', 'resolved']}
-state['default'] = state['new']
+state = { 'new':   ['new'],
+          'fixed': ['fixed', 'resolved'] }
+annotation = { 'resolved': 'resolution' }
+default_state = 'new'
 default_issues_dir = ".issues"
 filter_prefix = ".filter"
 date_format = '%a, %d %b %Y %H:%M:%S %1%2'
@@ -119,7 +121,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
 
     default_issue_text  =         "From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
     if not id:
-        default_issue_text +=     "State: %s\n" % state['default']
+        default_issue_text +=     "State: %s\n" % default_state
     default_issue_text +=         "Subject: brief description\n\n"
     default_issue_text +=         "Detailed description."
 
@@ -131,7 +133,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     # Create the text
     if message:
         if not id:
-            state_str = 'State: %s\n' % state['default']
+            state_str = 'State: %s\n' % default_state
         else:
             state_str = ''
         issue = "From: %s\nDate: %s\nSubject: %s\n%s" % \
@@ -417,10 +419,11 @@ def _attach_files(msg, filenames):
     return outer
 
 def _status_msg(msg):
-    if msg['State'] == 'resolved':
-        return 'resolved=' + msg['resolution']
+    s = msg['State']
+    if s in annotation:
+        return '%s=%s' % (s, msg[annotation[s]])
     else:
-        return msg['State']
+        return s
 
 def _read_colors(ui):
     colors = {}
