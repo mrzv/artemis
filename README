@@ -35,6 +35,21 @@ the issues subdirectory (instead of the default ``.issues``)::
     [artemis]
     issues = _issues
 
+Additionally, one can define colors for the issue list, based on the
+issues' states. For example::
+
+    new.color           = red
+    new.attrs           = bold
+    resolved.color      = white
+    in-progress.color   = yellow
+    in-progress.attrs   = bold
+
+will highlight issues with the state "new" as bold red, "resolved" issues
+as white, and "in-progress" issues as bold yellow. Artemis uses termcolor_
+library for the output, see its documentation for color options.
+
+.. _`termcolor`:    http://pypi.python.org/pypi/termcolor/
+
 
 Example
 -------

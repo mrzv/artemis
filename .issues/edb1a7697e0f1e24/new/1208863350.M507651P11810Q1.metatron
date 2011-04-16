@@ -1,7 +1,8 @@
 From: Dmitriy Morozov <morozov@cs.duke.edu>
 Date: Tue, 22 Apr 2008 07:21:57
-State: in-progress
+State: resolved
 Subject: Colorize output
 Message-Id: <edb1a7697e0f1e24-0-artemis@metatron>
+resolution: fixed
 
 Allow one to colorize output. Naturally with user-customizable colors.

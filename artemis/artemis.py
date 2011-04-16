@@ -17,8 +17,8 @@ from email.mime.text import MIMEText
 from    termcolor       import colored
 
 
-state = { 'new':   ['new'],
-          'fixed': ['fixed', 'resolved'] }
+state = { 'new':      ['new'],
+          'resolved': ['fixed', 'resolved'] }
 annotation = { 'resolved': 'resolution' }
 default_state = 'new'
 default_issues_dir = ".issues"
@@ -79,7 +79,7 @@ def ilist(ui, repo, **opts):
             else:
                 property_match = property_match and (property not in mbox[root])
 
-        if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['fixed']]): continue
+        if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['resolved']]): continue
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
 
         if not list_properties:
@@ -427,23 +427,25 @@ def _status_msg(msg):
 
 def _read_colors(ui):
     colors = {}
-    # defaults
-    colors['new.color']             = 'red'
-    colors['new.on_color']          = 'on_grey'
-    colors['new.attrs']             = 'bold'
-    colors['resolved.color']        = 'white'
-    colors['resolved.on_color']     = ''
-    colors['resolved.attrs']        = ''
-    for v in colors:
-        colors[v] = ui.config('artemis', v, colors[v])
-        if v.endswith('attrs'): colors[v] = colors[v].split()
+
+    for k,v in ui.configitems('artemis'):
+        if k == 'issues': continue
+        k = k.split('.')
+        s = k[0]; t = k[1]
+        if s not in colors: colors[s] = {}
+        colors[s][t] = v
+
     return colors
 
 def _color_summary(line, msg, colors):
-    if msg['State'] == 'new':
-        return colored(line, colors['new.color'],      attrs = colors['new.attrs'])
-    elif msg['State'] in state['fixed']:
-        return colored(line, colors['resolved.color'], attrs = colors['resolved.attrs'])
+    s = msg['State']
+    for alias, l in state.items():
+        if s in l: s = alias; break
+    if s in colors:
+        color    = colors[s]['color']         if 'color'    in colors[s] else None
+        on_color = colors[s]['on_color']      if 'on_color' in colors[s] else None
+        attrs    = colors[s]['attrs'].split() if 'attrs'    in colors[s] else None
+        return colored(line, color, on_color, attrs)
     else:
         return line
 
