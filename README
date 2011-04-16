@@ -44,8 +44,8 @@ issues' states. For example::
     in-progress.color   = yellow
     in-progress.attrs   = bold
 
-will highlight issues with the state "new" as bold red, "resolved" issues
-as white, and "in-progress" issues as bold yellow. Artemis uses termcolor_
+will highlight issues with the state ``new`` as bold red, ``resolved`` issues
+as white, and ``in-progress`` issues as bold yellow. Artemis uses termcolor_
 library for the output, see its documentation for color options.
 
 .. _`termcolor`:    http://pypi.python.org/pypi/termcolor/
