@@ -1,0 +1,24 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Mon, 18 Apr 2011 15:41:53 -0700
+State: new
+Subject: Configurable format
+Message-Id: <af5b63a7d86cf9e3-0-artemis@vine>
+
+The user should be able to define the format for the issue summary line (in
+ilist) in the config file. So, for instance, one could specify:
+
+  [artemis]
+  format = %(id)s (%(len)3d) [%(state)s]: %(Subject)s
+
+to have the default (current) format. One should also be able to specify
+additional conditions with the flags in the name of the option. For example:
+
+  format:state=in-progress    = %(id)s (%(len)3d) [%(state)s; priority=%(priority)s]: %(Subject)s
+  format:state=resolved       = %(id)s (%(len)3d) [%(state)s=%(resolution)s]: %(Subject)s
+  format:state=resolved&resolution=fixed  = %(id)s (%(len)3d) [fixed]: %(Subject)s    # also change color
+  format:state=fixed          = ...  # change color
+
+The format string would be passed the headers from the root message, so that
+the user could use whatever properties she wanted.
+
+This approach would also replace the current way we define colors.
