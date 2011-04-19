@@ -35,21 +35,9 @@ the issues subdirectory (instead of the default ``.issues``)::
     [artemis]
     issues = _issues
 
-Additionally, one can define colors for the issue list, based on the
-issues' states. For example::
+Additionally, one can specify filters_ and output formats_.
 
-    new.color           = red
-    new.attrs           = bold
-    resolved.color      = white
-    in-progress.color   = yellow
-    in-progress.attrs   = bold
-
-will highlight issues with the state ``new`` as bold red, ``resolved`` issues
-as white, and ``in-progress`` issues as bold yellow. Artemis uses termcolor_
-library for the output, see its documentation for color options.
-
-.. _`termcolor`:    http://pypi.python.org/pypi/termcolor/
-
+.. _formats:     Format_
 
 Example
 -------
@@ -214,3 +202,34 @@ placed in a file ``.issues/.filter`` creates a filter `olddoc` which can be
 invoked with the `ilist` command::
 
     hg ilist -f olddoc
+
+
+Format
+------
+
+One can specify the output format for the `ilist` command. The default looks
+like::
+
+    [artemis]
+    format = %(id)s (%(len)3d) [%(state)s]: %(subject)s
+
+Artemis passes a dictionary with the issue properties to the format string.
+(Plus ``id`` contains the issue id, and ``len`` contains the number of replies.)
+
+It's possible to specify different output formats depending on the properties of
+the issue. The conditions are encoded in the config variable names as follows::
+
+    format:state*resolved&resolution*fixed  = %(id)s (%(len)3d) [fixed]: %(Subject)s
+    format:state*resolved                   = %(id)s (%(len)3d) [%(state)s=%(resolution)s]: %(Subject)s
+
+The first rule matches issues with the ``state`` property set to ``resolved``
+and ``resolution`` set to ``fixed``; it abridges the output. The secod rule
+matches all the ``resolved`` issues (not matched by the first rule); it annotates
+the issue's state with its ``resolution``.
+
+Finally, the dictionary passed to the format string contains a subset of
+`ANSI codes`_, so one could color the summary lines::
+
+    format:state*new = %(red)s%(bold)s%(id)s (%(len)3d) [%(state)s]: %(Subject)s%(reset)s
+
+.. _`ANSI codes`:       http://en.wikipedia.org/wiki/ANSI_escape_code

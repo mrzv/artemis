@@ -1,0 +1,11 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Mon, 18 Apr 2011 22:00:05 -0700
+Subject: Fixed (with changes in the format)
+Message-Id: <af5b63a7d86cf9e3-80e747b5d9f0b2ed-artemis@vine>
+References: <af5b63a7d86cf9e3-0-artemis@vine>
+In-Reply-To: <af5b63a7d86cf9e3-0-artemis@vine>
+
+Equal sign wouldn't work in the config file variable name, so instead the format
+is:
+
+  format:property1*value1&propert2*value2 = ...

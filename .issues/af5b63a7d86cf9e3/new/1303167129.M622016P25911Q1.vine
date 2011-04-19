@@ -1,8 +1,9 @@
 From: Dmitriy Morozov <dmitriy@mrzv.org>
 Date: Mon, 18 Apr 2011 15:41:53 -0700
-State: new
+State: resolved
 Subject: Configurable format
 Message-Id: <af5b63a7d86cf9e3-0-artemis@vine>
+resolution: fixed
 
 The user should be able to define the format for the issue summary line (in
 ilist) in the config file. So, for instance, one could specify:

@@ -13,19 +13,17 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-from    termcolor       import colored
+from itertools import izip
 
 
 state = { 'new':      ['new'],
           'resolved': ['fixed', 'resolved'] }
-annotation = { 'resolved': 'resolution' }
 default_state = 'new'
 default_issues_dir = ".issues"
 filter_prefix = ".filter"
 date_format = '%a, %d %b %Y %H:%M:%S %1%2'
 maildir_dirs = ['new','cur','tmp']
-
+default_format = '%(id)s (%(len)3d) [%(state)s]: %(Subject)s'
 
 def ilist(ui, repo, **opts):
     """List issues associated with the project"""
@@ -40,8 +38,8 @@ def ilist(ui, repo, **opts):
     if opts['order']:
         order = opts['order']
 
-    # Colors
-    colors = _read_colors(ui)
+    # Formats
+    formats = _read_formats(ui)
 
     # Find issues
     issues_dir = ui.config('artemis', 'issues', default = default_issues_dir)
@@ -83,7 +81,7 @@ def ilist(ui, repo, **opts):
         if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
 
         if not list_properties:
-            summaries.append((_summary_line(mbox, root, issue[len(issues_path)+1:], colors),     # +1 for trailing /
+            summaries.append((_summary_line(mbox, root, issue[len(issues_path)+1:], formats),     # +1 for trailing /
                               _find_mbox_date(mbox, root, order)))
         else:
             for lp in list_properties:
@@ -92,7 +90,7 @@ def ilist(ui, repo, **opts):
     if not list_properties:
         summaries.sort(lambda (s1,d1),(s2,d2): cmp(d2,d1))
         for s,d in summaries:
-            ui.write(s)
+            ui.write(s + '\n')
     else:
         for lp in list_properties_dict.keys():
             ui.write("%s:\n" % lp)
@@ -418,43 +416,60 @@ def _attach_files(msg, filenames):
         outer.attach(attachment)
     return outer
 
-def _status_msg(msg):
-    s = msg['State']
-    if s in annotation:
-        return '%s=%s' % (s, msg[annotation[s]])
-    else:
-        return s
-
-def _read_colors(ui):
-    colors = {}
+def _read_formats(ui):
+    formats = []
+    global default_format
 
     for k,v in ui.configitems('artemis'):
-        if k == 'issues': continue
-        k = k.split('.')
-        s = k[0]; t = k[1]
-        if s not in colors: colors[s] = {}
-        colors[s][t] = v
+        if not k.startswith('format'): continue
+        if k == 'format':
+            default_format = v
+            continue
+        formats.append((k.split(':')[1], v))
 
-    return colors
+    return formats
 
-def _color_summary(line, msg, colors):
-    s = msg['State']
-    for alias, l in state.items():
-        if s in l: s = alias; break
-    if s in colors:
-        color    = colors[s]['color']         if 'color'    in colors[s] else None
-        on_color = colors[s]['on_color']      if 'on_color' in colors[s] else None
-        attrs    = colors[s]['attrs'].split() if 'attrs'    in colors[s] else None
-        return colored(line, color, on_color, attrs)
-    else:
-        return line
+def _format_match(props, formats):
+    for k,v in formats:
+        eq = k.split('&')
+        eq = [e.split('*') for e in eq]
+        for e in eq:
+            if props[e[0]] != e[1]:
+                break
+        else:
+            return v
 
-def _summary_line(mbox, root, issue, colors):
-    line = "%s (%3d) [%s]: %s\n" % (issue,
-                                    len(mbox)-1,                # number of replies (-1 for self)
-                                    _status_msg(mbox[root]),
-                                    mbox[root]['Subject'])
-    return _color_summary(line, mbox[root], colors)
+    return default_format
+
+def _summary_line(mbox, root, issue, formats):
+    props = PropertiesDictionary(mbox[root])
+    props['id']  = issue
+    props['len'] = len(mbox)-1              # number of replies (-1 for self)
+
+    return _format_match(props, formats) % props
+
+class PropertiesDictionary(dict):
+    def __init__(self, msg):
+        # Borrowed from termcolor
+        for k,v in zip(['bold', 'dark', '', 'underline', 'blink', '', 'reverse', 'concealed'], range(1, 9)) + \
+                   zip(['grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'], range(30, 38)):
+            self[k] = '\033[' + str(v) + 'm'
+        self['reset']  = '\033[0m'
+        del self['']
+
+        for k,v in msg.items():
+            self[k] = v
+
+    def __contains__(self, k):
+        return super(PropertiesDictionary, self).__contains__(k.lower())
+
+    def __getitem__(self, k):
+        if k not in self: return ''
+        return super(PropertiesDictionary, self).__getitem__(k.lower())
+
+    def __setitem__(self, k, v):
+        super(PropertiesDictionary, self).__setitem__(k.lower(), v)
+
 
 cmdtable = {
     'ilist':    (ilist,
