@@ -114,13 +114,20 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
             ui.warn('No such issue\n')
             return
         _create_missing_dirs(issues_path, issue_id)
+        mbox = mailbox.Maildir(issue_fn, factory=mailbox.MaildirMessage)
+        keys = _order_keys_date(mbox)
+        root = keys[0]
 
     user = ui.username()
 
     default_issue_text  =         "From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
     if not id:
         default_issue_text +=     "State: %s\n" % default_state
-    default_issue_text +=         "Subject: brief description\n\n"
+        default_issue_text +=     "Subject: brief description\n\n"
+    else:
+        subject = mbox[(comment < len(mbox) and keys[comment]) or root]['Subject']
+        if not subject.startswith('Re: '): subject = 'Re: ' + subject
+        default_issue_text +=     "Subject: %s\n\n" % subject
     default_issue_text +=         "Detailed description."
 
     # Get properties, and figure out if we need an explicit comment
@@ -165,11 +172,11 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
         while os.path.exists(issue_fn):
             issue_id = _random_id()
             issue_fn = os.path.join(issues_path, issue_id)
+        mbox = mailbox.Maildir(issue_fn, factory=mailbox.MaildirMessage)
+        keys = _order_keys_date(mbox)
     # else: issue_fn already set
 
     # Add message to the mailbox
-    mbox = mailbox.Maildir(issue_fn, factory=mailbox.MaildirMessage)
-    keys = _order_keys_date(mbox)
     mbox.lock()
     if id and comment >= len(mbox):
         ui.warn('No such comment number in mailbox, commenting on the issue itself\n')
