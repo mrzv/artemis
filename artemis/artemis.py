@@ -255,6 +255,8 @@ def ishow(ui, repo, id, comment = 0, **opts):
                 if not filename:
                     ext = mimetypes.guess_extension(part.get_content_type()) or ''
                     filename = 'attachment-%03d%s' % (counter, ext)
+                else:
+                    filename = os.path.basename(filename)
                 fp = open(filename, 'wb')
                 fp.write(part.get_payload(decode = True))
                 fp.close()
@@ -419,7 +421,7 @@ def _attach_files(msg, filenames):
             # Encode the payload using Base64
             encoders.encode_base64(attachment)
         # Set the filename parameter
-        attachment.add_header('Content-Disposition', 'attachment', filename=filename)
+        attachment.add_header('Content-Disposition', 'attachment', filename=os.path.basename(filename))
         outer.attach(attachment)
     return outer
 

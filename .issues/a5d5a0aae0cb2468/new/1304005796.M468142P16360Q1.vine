@@ -1,0 +1,9 @@
+From: Dmitriy Morozov <dmitriy@mrzv.org>
+Date: Thu, 28 Apr 2011 08:49:01 -0700
+Subject: Re: Attachments should be stored without path
+Message-Id: <a5d5a0aae0cb2468-9557f6437dd61990-artemis@vine>
+References: <a5d5a0aae0cb2468-0-artemis@tomas>
+In-Reply-To: <a5d5a0aae0cb2468-0-artemis@tomas>
+
+Now we only store the basename of an attachment. Moreover, when extracting, the
+basename is applied once more (for older attachments that used the full path).
