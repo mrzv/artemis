@@ -188,7 +188,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
         outer.add_header('Message-Id', "<%s-%s-artemis@%s>" % (issue_id, _random_id(), socket.gethostname()))
         outer.add_header('References', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
         outer.add_header('In-Reply-To', mbox[(comment < len(mbox) and keys[comment]) or root]['Message-Id'])
-    new_bug_path = issue_fn[(len(repo.root)+1):] + '/new/' + mbox.add(outer) # + 1 for the trailing /
+    new_bug_path = issue_fn + '/new/' + mbox.add(outer)
     commands.add(ui, repo, new_bug_path)
 
     # Fix properties in the root message
