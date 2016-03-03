@@ -3,3 +3,9 @@ syntax:glob
 artemis.egg-info/
 build/
 dist/
+.idea/*
+*.pyo
+*.pyc
+pycharm-debug.egg
+syntax: glob
+artemis.iml

@@ -2,4 +2,7 @@
 artemis.egg-info/
 build/
 dist/
-
+.idea/*
+*.pyo
+*.pyc
+pycharm-debug.egg
