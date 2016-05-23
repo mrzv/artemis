@@ -17,21 +17,25 @@ from artemis import Artemis
 from list import ArtemisList
 from add import ArtemisAdd
 from show import ArtemisShow
+from find import ArtemisFind
 
 __author__ = 'frostbane'
 __date__ = '2016/03/02'
 
 
 cmdtable = {
-    'ilist'       : (ArtemisList().list,
-                     ArtemisList.commands,
-                     _(ArtemisList.usage)),
-    'iadd'        : (ArtemisAdd().add,
-                     ArtemisAdd.commands,
-                     _(ArtemisAdd.usage)),
-    'ishow'       : (ArtemisShow().show,
-                     ArtemisShow.commands,
-                     _(ArtemisShow.usage)),
+    'ilist' : (ArtemisList().list,
+               ArtemisList.commands,
+               _(ArtemisList.usage)),
+    'iadd'  : (ArtemisAdd().add,
+               ArtemisAdd.commands,
+               _(ArtemisAdd.usage)),
+    'ishow' : (ArtemisShow().show,
+               ArtemisShow.commands,
+               _(ArtemisShow.usage)),
+    'ifind' : (ArtemisFind().find,
+              ArtemisFind.commands,
+              _(ArtemisFind.usage)),
 }
 
 if __name__ == "__main__":
