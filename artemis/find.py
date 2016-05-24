@@ -57,10 +57,23 @@ class ArtemisFind:
         # case-sensitive => case_sensitive
         ('p', 'property', "subject", 'Issue property to match. '
                                      '[state, from, subject, date, '
-                                     'priority, resolution, etc..]'),
+                                     'priority, resolution, etc..].'
+                                     '(e.g. hg isearch -p from me)'),
+        ('n', 'no-property', None, 'Do not match the property. Use '
+                                   'with --message to search only '
+                                   'the message. The --property will '
+                                   'be ignored.'),
+        ('m', 'message', None, 'Search the message. If no match is '
+                               'found it will then search the '
+                               'property for a match. Use '
+                               '--no-property or use a blank '
+                               'property to ignore the property '
+                               'search.'
+                               '(e.g. hg isearch -mp "" "the bug")'),
         ('c', 'case-sensitive', None, 'Case sensitive search.'),
         ('r', 'regex', None, 'Use regular expressions. '
-                             'Exact option will be ignored.'),
+                             'Exact option will be ignored.'
+                             '(e.g. hg isearch -rmn "todo *(:)?"'),
         ('e', 'exact', None, 'Use exact comparison. '
                              'Like comparison is used if exact is'
                              'uspecified.'),
@@ -88,37 +101,87 @@ class ArtemisFind:
         else:
             return query in search_string
 
+    def __get_payload(self, mbox, key):
+        # todo move to Artemis class since this is static, and can
+        #      be possible reused in other classes
+        payload = ""
+
+        for part in mbox[key].walk():
+            ctype = part.get_content_type()
+            maintype, subtype = ctype.split('/', 1)
+
+            if maintype == 'multipart':
+                continue
+
+            if ctype == 'text/plain':
+                payload = part.get_payload().strip()
+
+        return payload
+
+    def __search_payload(self, mbox, query, case_sens):
+        keys = mbox.keys()
+        for key in keys:
+            payload = self.__get_payload(mbox, key)
+
+            if not payload:
+                continue
+
+            if not case_sens:
+                payload = payload.lower()
+
+            if self.__is_hit(query, payload):
+                return True
+
+        return False
+
+    def __search_property(self, mbox, query, case_sens):
+        query_filter = self.opts["property"]
+
+        root = Artemis.find_root_key(mbox)
+        search_string = mbox[root][query_filter]
+
+        # non existing property
+        if not search_string:
+            return False
+
+        if not case_sens:
+            search_string = search_string.lower()
+
+        if self.__is_hit(query, search_string):
+            return True
+
         return False
 
     def __search_issues(self, query):
-        ui = self.ui
-        repo = self.repo
-        opts = self.opts
-
-        case_sens = opts["case_sensitive"]
-        query_filter = opts["property"]
+        case_sens = self.opts["case_sensitive"]
+        search_payload = self.opts["message"]
+        no_property = self.opts["no_property"]
 
         if not case_sens:
             query = query.lower()
 
         hits = []
 
-        mboxes = Artemis.get_all_mboxes(ui, repo)
+        mboxes = Artemis.get_all_mboxes(self.ui, self.repo)
         for mbox in mboxes:
+            has_hit = False
 
-            root = Artemis.find_root_key(mbox)
-            # print mbox[root].get_date()
-            # print mbox[root].get_info()
+            if search_payload:
+                has_hit = self.__search_payload(mbox,
+                                                query,
+                                                case_sens)
 
-            search_string = mbox[root][query_filter]
-            # non existing property
-            if not search_string:
+            if has_hit:
+                hits.append(mbox.issue)
+                # if the message has a hit there is no need to
+                # continue searching for a hit with the property
                 continue
 
-            if not case_sens:
-                search_string = search_string.lower()
+            if no_property:
+                # ignore the property search
+                continue
 
-            if self.__is_hit(query, search_string):
+            if self.__search_property(mbox, query, case_sens):
                 hits.append(mbox.issue)
 
         return hits
