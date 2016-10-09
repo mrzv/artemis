@@ -21,6 +21,10 @@ or downloading the entire `repository as a tarball`_.
 
 .. _`repository as a tarball`:  http://hg.mrzv.org/Artemis/archive/tip.tar.gz
 
+A git mirror is `hosted on GitHub`_.
+
+.. _`hosted on GitHub`: https://github.com/mrzv/artemis
+
 
 Setup
 -----
