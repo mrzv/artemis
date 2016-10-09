@@ -10,10 +10,9 @@ list of conditions and the following disclaimer.
 this list of conditions and the following disclaimer in the documentation and/or
 other materials provided with the distribution.
 
-(3) Neither the name of the University of California, Lawrence Berkeley National
-Laboratory, U.S. Dept. of Energy nor the names of its contributors may be used
-to endorse or promote products derived from this software without specific prior
-written permission.
+(3) Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -29,9 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 You are under no obligation whatsoever to provide any bug fixes, patches, or
 upgrades to the features, functionality or performance of the source code
 ("Enhancements") to anyone; however, if you choose to make your Enhancements
-available either publicly, or directly to Lawrence Berkeley National Laboratory,
-without imposing a separate written license agreement for such Enhancements,
-then you hereby grant the following license: a  non-exclusive, royalty-free
-perpetual license to install, use, modify, prepare derivative works, incorporate
-into other computer software, distribute, and sublicense such enhancements or
+available either publicly, or directly to the author of this software, without
+imposing a separate written license agreement for such Enhancements, then you
+hereby grant the following license: a  non-exclusive, royalty-free perpetual
+license to install, use, modify, prepare derivative works, incorporate into
+other computer software, distribute, and sublicense such enhancements or
 derivative works thereof, in binary and source code form.
