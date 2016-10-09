@@ -1,5 +1,5 @@
-syntax:glob
 *.pyc
 artemis.egg-info/
 build/
 dist/
+

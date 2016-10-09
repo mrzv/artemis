@@ -1,7 +1,9 @@
 Artemis
 =======
 
-Artemis is a lightweight distributed issue tracking extension for Mercurial_.
+Artemis is a lightweight distributed issue tracking extension for
+Mercurial_.  Alpha-quality `git support`_ is recently available and
+is described in its own section below.
 
 Individual issues are stored in directories in an ``.issues`` subdirectory
 (overridable in a config file).  Each one is a Maildir_ and each one is assumed
@@ -9,6 +11,7 @@ to have a single root message.  Various properties of an issue are stored in the
 headers of that message.
 
 .. _Mercurial:      http://www.selenic.com/mercurial/
+.. _`git support`:  Git
 .. _Maildir:        http://en.wikipedia.org/wiki/Maildir
 
 One can obtain Artemis by cloning its repository:
@@ -237,3 +240,24 @@ Finally, the dictionary passed to the format string contains a subset of
     format:state*new = %(red)s%(bold)s%(id)s (%(len)3d) [%(state)s]: %(Subject)s%(reset)s
 
 .. _`ANSI codes`:       http://en.wikipedia.org/wiki/ANSI_escape_code
+
+
+Git
+---
+
+Artemis can now be used with git_.
+
+This requires the `git-artemis` script to be in the executable path,
+and the `artemis` module to be findable by python.  This can be done
+by installing using the supplied `setup.py`.
+
+Artemis commands are accessed from git like this::
+
+    git artemis list
+
+similarly for `show` or `add`.  Arguments and flags are exactly the
+same as for the mercurial version.
+
+It is not yet possible to specify formats via the `git config` command.
+
+.. _git:      https://git-scm.com/
