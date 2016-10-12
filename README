@@ -11,7 +11,7 @@ to have a single root message.  Various properties of an issue are stored in the
 headers of that message.
 
 .. _Mercurial:      http://www.selenic.com/mercurial/
-.. _`git support`:  Git
+.. _`git support`:  Git_
 .. _Maildir:        http://en.wikipedia.org/wiki/Maildir
 
 One can obtain Artemis by cloning its repository:
