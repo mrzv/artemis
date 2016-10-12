@@ -8,7 +8,7 @@ setup(
     author = "Dmitriy Morozov",
     author_email = "dmitriy@mrzv.org",
     description = "Issue tracking for mercurial or git",
-    url = "https://github.com/jkozak/git-artemis",
+    url = "https://github.com/mrzv/artemis",
     py_modules=["artemis"],
     scripts=["git-artemis"],
     install_requires=["mercurial"],
