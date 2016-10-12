@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# use artemis with git
+#  John Kozak <jgak@thameslighter.net> 2016
+
+import artemis
+
+import os
+import sys
+import tempfile
+import subprocess
+from argparse import ArgumentParser
+from collections import namedtuple
+
+# munge arguments and pass on to artemis
+def iadd(args,repo,ui):
+    id = args.id
+    d  = dict(args.__dict__)
+    del d['id']
+    artemis.iadd(ui,repo,id,**d)
+
+def ilist(args,repo,ui):
+    artemis.ilist(ui,repo,**args.__dict__)
+
+def ishow(args,repo,ui):
+    id = args.id
+    d  = dict(args.__dict__)
+    del d['id']
+    artemis.ishow(ui,repo,id,**d)
+
+
+class Repo(object):
+    """Implement a subset of hgext's Repo object in git."""
+    def __init__(self):
+        git_sp    = subprocess.Popen(['git','rev-parse','--show-toplevel'],stdout=subprocess.PIPE)
+        self.root = git_sp.communicate()[0].rstrip()
+
+
+class UI(object):
+    """Implement a subset of hgext's UI object in git."""
+    def __init__(self,config):
+        self._config  = config
+        self.verbose  = True
+    def config(self,group,name,**opts):
+        if group=='artemis':
+            return self._config.get(name,opts['default'])
+        else:
+            raise NotFound(group,name)
+    def configitems(self,_):
+        return self._config.items()
+    def write(self,s):
+        print s,
+    def warn(self,s):
+        print s,
+    def status(self,s):
+        print s,
+    def username(self):
+        sp = subprocess.Popen(['git','config','user.name'],stdout=subprocess.PIPE)
+        return sp.communicate()[0].rstrip()
+    def edit(self,text,user):
+        fd,fn = tempfile.mkstemp(suffix='.txt')
+        try:
+            os.write(fd,text)
+            os.close(fd)
+            rc = subprocess.call("%s '%s'"%(os.environ['EDITOR'],fn),shell=True)
+            if rc!=0:
+                raise Exception('edit failed')
+            else:
+                return file(fn).read()
+        finally:
+            os.unlink(fn)
+
+
+# Monkeypatch the hg commands object to implement git equivalent functionality.
+# It would be nice to disable the commands we don't re-implement.
+def git_add(ui,repo,path):
+    rc = subprocess.call("git add '%s'"%(path,),shell=True)
+    if rc!=0:
+        raise Exception("git add failed")
+def git_commit(ui,repo,path):
+    rc = subprocess.call("git commit -m 'commit from artemis' -- '%s'"%(path,),shell=True)
+    if rc!=0:
+        raise Exception("git commit failed")
+#artemis.commands.clear()  # how to do this?
+artemis.commands.add    = git_add
+artemis.commands.commit = git_commit
+
+
+def _build_argparse_from_cmdtable():
+    """Build an ArgumentParser equivalent to artemis' cmdtable.
+       This is a bit hacky."""
+    parser     = ArgumentParser()
+    subparsers = parser.add_subparsers(help="simple issue tracker")
+    for k,v in artemis.cmdtable.items():
+        assert k[0]=='i'
+        n  = k[1:]
+        sp = subparsers.add_parser(n)
+        for f in v[1]:
+            args   = ([] if f[0]=='' else ['-'+f[0]])+['--'+f[1]]
+            kwargs = {'help':f[3]}
+            if f[2] in [False,None]:
+                kwargs['action']  = 'store_true'
+            elif f[2]==[]:
+                kwargs['action']  = 'append'
+                kwargs['default'] = []
+            else:
+                kwargs['action']  = 'store'
+            if isinstance(f[2],basestring):
+                kwargs['default'] = ''
+            sp.add_argument(*args,**kwargs)
+        sc = v[2].split(' ')
+        assert sc[0]=='hg'
+        assert sc[1]==k
+        assert sc[2]=='[OPTIONS]'
+        for a in sc[3:]:
+            kwargs = {'action':'store'}
+            n      = a
+            if a[0]=='[':
+                assert a[-1]==']'
+                n               = a[1:-1]
+                kwargs['nargs'] = '?'
+                if n=='COMMENT':
+                    kwargs['default'] = 0
+            sp.add_argument(n.lower(),**kwargs)
+        sp.set_defaults(func=globals()[k])
+    return parser
+
+
+if __name__=='__main__':
+    repo   = Repo()
+    ui     = UI({'issues':artemis.default_issues_dir})
+    parser = _build_argparse_from_cmdtable()
+    args   = parser.parse_args()
+    args.func(args,repo,ui)
