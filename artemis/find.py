@@ -209,6 +209,7 @@ class ArtemisFind:
                      )
 
     def find(self, ui, repo, query, **opts):
+        """Shows a list of issues matching the specified QUERY"""
         self.opts = opts
         self.ui = ui
         self.repo = repo
