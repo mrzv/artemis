@@ -128,100 +128,70 @@ Commands
 --------
 
 `iadd` ``[ID] [COMMENT]``
-> Add an issue, or a comment to an existing issue or comment. The comment is
-> recorded as a reply to the particular message. `iadd` is the only command
-> that changes the state of the repository (by adding the new issue files to
-> the list of tracked files or updating some of them), however, it does not
-> perform an actual commit unless explicitly asked to do so.
+    Add an issue, or a comment to an existing issue or comment. The comment is
+    recorded as a reply to the particular message. `iadd` is the only command
+    that changes the state of the repository (by adding the new issue files to
+    the list of tracked files or updating some of them), however, it does not
+    perform an actual commit unless explicitly asked to do so.
 
+    `-p`, `--property`
+        update a property of the issue ``ID``, e.g. ``-p state=resolved -p resolution=fixed``
 
-options:
+    `-a`, `--attach`
+        attach a file to the message, e.g. ``-a filename1 -a filename2``
 
-|     |                       | description                           |
-|-----|-----------------------|---------------------------------------|
-| -a  | --attach VALUE [+]    | attach file(s)                        |
-|     |                       | (e.g., -a filename1 -a filename2)     |
-| -p  | --property VALUE [+]  | update properties                     |
-|     |                       | (e.g. -p state=fixed,                 |
-|     |                       | -p state=resolved                     |
-|     |                       | -p resolution=fixed)                  |
-| -n  | --no-property-comment | do not add a comment about changed    |
-|     |                       | properties                            |
-| -m  | --message VALUE       | use <text> as an issue subject        |
-| -i  | --index VALUE         | 0 based index of the message to show  |
-|     |                       | (default: 0)                          |
-| -c  | --commit              | perform a commit after the addition   |
+    `-n`, `--no-property-comment`
+        do not launch an editor to record a comment (useful if only changing
+        properties)
 
-[+] marked option can be specified multiple times
+    `-m`, `--message`
+        use ``text`` as an issue subject
+
+    `-c`, `--commit`
+        commit the issue after the addition (all changes to the issue will be
+        committed)
 
 
 `ilist`
-> List issues associated with the project
+    List issues.
 
-options:
+    `-a`, `--all`
+        list all issues (not just the `new` ones)
 
-|     |                      | description                            |
-|-----|----------------------|----------------------------------------|
-| -a  | --all                | list all issues                        |
-|     |                      | (by default only those with state new) |
-| -p  | --property VALUE [+] | list issues with specific field values |
-|     |                      | (e.g., -p state=fixed,                 |
-|     |                      | -p state=resolved -p category=doc);    |
-|     |                      | lists all possible values of a         |
-|     |                      | property if no = sign is provided.     |
-|     |                      | (e.g. -p category)                     |
-|     | --all-properties     | list all available properties          |
-| -o  | --order VALUE        | order of the issues; choices: "new"    |
-|     |                      | (date submitted), "latest"             |
-|     |                      | (date of the last message)             |
-|     |                      | (default: new)                         |
-| -d  | --date VALUE         | restrict to issues matching the date   |
-|     |                      | (e.g., -d ">12/28/2007)"               |
-| -f  | --filter VALUE       | restrict to pre-defined filter         |
-|     |                      | (in .issues/.filter*)                  |
+    `-p`, `--property`
+        list issues with specific property values, e.g.
+        ``-p state=resolved -p category=documentation``;
+        if no property value is provided (e.g. ``-p category``), lists all
+        possible values for that property (among the issues that satisfy the
+        rest of the criteria)
 
-[+] marked option can be specified multiple times
+    `-o`, `--order`
+        order of the issues; choices: "new" (date submitted), "latest" (date of
+        the most recent message)
+
+    `-d`, `--date`
+        restrict to issues matching the given date, e.g. ``-d ">1/1/2008"``
+
+    `-f`, `--filter`
+        restrict to a predefined filter, see Filters_ below
 
 
 `ishow` ``[ID] [COMMENT]``
-> Shows issue ID, or possibly its comment COMMENT
+    Show an issue or a comment.
 
-options:
+    `-a`, `--all`
+        list all comments to an issue (i.e. not just a single message, and a
+        thread of subjects of its replies)
 
-|     |                     | description                             |
-|-----|---------------------|-----------------------------------------|
-| -a  | --all               | list all comments                       |
-| -s  | --skip VALUE        | skip lines starting with a substring    |
-|     |                     | (default: >)                            |
-| -x  | --extract VALUE [+] | extract attachments                     |
-|     |                     | (provide attachment number as argument) |
-| -i  | --index VALUE       | 0 based index of the message to show    |
-|     |                     | (default: 0)                            |
-| -o  | --output VALUE      | extract output directory                |
-|     | --mutt              | use mutt to show issue                  |
+    `-s`, `--skip`
+        in the output skip lines of the messages starting with the given
+        substring, defaults to ``>``
 
-[+] marked option can be specified multiple times
+    `-x`, `--extract`
+        extract attachments (given their numbers)
 
-
-`ifind`
-
-> Shows a list of issues matching the specified QUERY
-
-options:
-
-|     |                   | description                               |
-|-----|-------------------|-------------------------------------------|
-| -p  | --property VALUE  | issue property to match                   |
-|     |                   | [state, from, subject, date, priority,    |
-|     |                   | [resolution, ticket, etc..]               |
-|     |                   | (default: subject)                        |
-| -c  | --case-sensitive  | case sensitive search                     |
-| -r  | --regex           | use regular expressions                   |
-|     |                   | (exact option will be ignored)            |
-| -e  | --exact           | use exact comparison                      |
-|     |                   | like comparison is used if uspecified     |
-
-[+] marked option can be specified multiple times
+    `--mutt`
+        use ``mutt`` to show issue
 
 
 Filters
