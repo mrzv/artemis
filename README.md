@@ -1,64 +1,81 @@
-Artemis
-=======
+# Artemis #
+-----------
 
-Artemis is a lightweight distributed issue tracking extension for
-Mercurial_.  Alpha-quality `git support`_ is recently available and
-is described in its own section below.
+> [Artemis](http://www.mrzv.org/software/artemis/) is a lightweight distributed issue tracking extension for [Mercurial](http://www.selenic.com/mercurial/).
 
-Individual issues are stored in directories in an ``.issues`` subdirectory
-(overridable in a config file).  Each one is a Maildir_ and each one is assumed
-to have a single root message.  Various properties of an issue are stored in the
-headers of that message.
-
-.. _Mercurial:      http://www.selenic.com/mercurial/
-.. _`git support`:  GitSupport_
-.. _Maildir:        http://en.wikipedia.org/wiki/Maildir
-
-One can obtain Artemis by cloning its repository:
-
-.. parsed-literal::
-
-    hg clone http://hg.mrzv.org/Artemis/
-
-or downloading the entire `repository as a tarball`_.
-
-.. _`repository as a tarball`:  http://hg.mrzv.org/Artemis/archive/tip.tar.gz
-
-A git mirror is `hosted on GitHub`_.
-
-.. _`hosted on GitHub`: https://github.com/mrzv/artemis
+* [Setup](#markdown-header-setup)
+* [Example](#markdown-header-example)
+* [Commands](#markdown-header-commands)
+* [Filters](#markdown-header-filters)
+* [Format](#markdown-header-format)
 
 
-Setup
------
+Individual issues are stored in directories in an `.issues` subdirectory (overridable in a config file). Each one is a `Maildir` and each one is assumed to have a single root message. Various properties of an issue are stored in the headers of that message.
 
-In the ``[extensions]`` section of your ``~/.hgrc`` add::
+One can obtain Artemis by cloning its [repository](http://hg.mrzv.org/Artemis/):
 
+```
+    $ hg clone http://hg.mrzv.org/Artemis/
+```
+
+or downloading the entire repository as a [tarball](http://hg.mrzv.org/Artemis/archive/tip.tar.gz).
+
+
+
+## Setup ##
+-----------
+
+In the `[extensions]` section of your `~/.hgrc` add:
+
+```
     artemis = /path/to/Artemis/artemis
+```
 
-Optionally, provide a section ``[artemis]``, and specify an alternative path for
-the issues subdirectory (instead of the default ``.issues``)::
+Optionally, provide a section `[artemis]` in your `~/.hgrc` file or the repository local `.hg/hgrc` file, and specify an alternative path for the issues subdirectory (instead of the default `.issues`):
 
+```
     [artemis]
     issues = _issues
+```
 
-Additionally, one can specify filters_ and output formats_.
+Additionally, one can specify [filters](#markdown-header-filters) and output [formats](#markdown-header-format).
 
-.. _formats:     Format_
+### Windows ###
+---------------
 
-Example
--------
+The TortoiseHg for windows comes with a sandboxed Python, that means that thg will not be using the Python installed in the system.
 
-Create an issue::
+If you get a `No module named mailbox!` error find the `mailbox.py` under `%PYTHON_PATH%\Lib` and add it to the `%HG_PATH%\lib\library.zip`. 
 
-    # hg iadd
+
+[↑ back to top](#markdown-header-artemis)
+
+
+## Example ##
+-------------
+
+**Create an issue:**
+
+```
+    $ hg iadd
     ... enter some text in an editor ...
+```
+.
+```
     Added new issue 907ab57e04502afd
+```
 
-    # hg ilist
+**List the issues:**
+
+```
+    $ hg ilist
     907ab57e04502afd (  0) [new]: New issue
+```
 
-    # hg ishow 907
+**Show an issue:**
+
+```
+    $ hg ishow 907ab57e04502afd
     ======================================================================
     From: ...
     Date: ...
@@ -68,11 +85,16 @@ Create an issue::
     Detailed description.
 
     ----------------------------------------------------------------------
+```
 
-Add a comment to the issue::
+**Add a comment to the issue:**
 
-    # hg iadd 907
+```
+    $ hg iadd 907ab57e04502afd
     ... enter the comment text
+```
+.
+```
     ======================================================================
     From: ...
     [snip]
@@ -82,11 +104,16 @@ Add a comment to the issue::
     Comments:
       1: [dmitriy] Some comment
     ----------------------------------------------------------------------
+```
 
-And a comment to the comment::
+**And a comment to the comment:**
 
-    # hg iadd 907 1
+```
+    $ hg iadd 907ab57e04502afd -i 1
     ... enter the comment text ...
+```
+.
+```
     ======================================================================
     From: ...
     [snip]
@@ -97,10 +124,15 @@ And a comment to the comment::
       1: [dmitriy] Some comment
         2: [dmitriy] Comment on a comment
     ----------------------------------------------------------------------
+```
 
-Close the issue::
+**Close the issue:**
 
-    # hg iadd 907 -p state=resolved -p resolution=fixed -n
+```
+    $ hg iadd 907ab57e04502afd -p state=resolved -p resolution=fixed -n
+```
+.
+```
     ======================================================================
     From: ...
     [snip]
@@ -112,27 +144,49 @@ Close the issue::
         2: [dmitriy] Comment on a comment
       3: [dmitriy] changed properties (state=resolved, resolution=fixed)
     ----------------------------------------------------------------------
+```
 
-No more new issues, and one resolved issue::
+**No more new issues, and one resolved issue:**
 
-    # hg ilist
-    # hg ilist -a
+```
+    $ hg ilist
+    $ hg ilist -a
     907ab57e04502afd (  3) [resolved=fixed]: New issue
+```
 
-The fact that issues are Maildirs, allows one to look at them in, for example,
-``mutt`` with predictable results::
+The fact that issues are Maildirs, allows one to look at them in, for example, `mutt` with predictable results:
 
+```
     mutt -Rf .issues/907ab57e04502afd
+```
 
-Commands
---------
+**Search the issues:**
 
-`iadd` ``[ID] [COMMENT]``
-> Add an issue, or a comment to an existing issue or comment. The comment is
-> recorded as a reply to the particular message. `iadd` is the only command
-> that changes the state of the repository (by adding the new issue files to
-> the list of tracked files or updating some of them), however, it does not
-> perform an actual commit unless explicitly asked to do so.
+Search a property using regular expressions
+```
+    hg ifind -p state -r "fix(ed)?|resolve(d)?"
+    907ab57e04502afd (  3) [resolved]: New issue
+    baca6256d98fb593 (  1) [resolved]: Another issue
+```
+
+Search the message for a string
+```
+    hg ifind -mn "comment" 
+    907ab57e04502afd (  3) [resolved]: New issue
+    baca6256d98fb593 (  1) [resolved]: Another issue
+    ba564b23fcff6358 (  1) [new]: New issue
+```
+
+
+
+[↑ back to top](#markdown-header-artemis)
+
+## Commands ##
+--------------
+
+**hg iadd [OPTIONS] [ID]**
+
+> Adds a new issue, or comment to an existing issue ID or its comment COMMENT
 
 
 options:
@@ -155,7 +209,11 @@ options:
 [+] marked option can be specified multiple times
 
 
-`ilist`
+
+
+
+**hg ilist [OPTIONS]**
+
 > List issues associated with the project
 
 options:
@@ -183,7 +241,9 @@ options:
 [+] marked option can be specified multiple times
 
 
-`ishow` ``[ID] [COMMENT]``
+
+**hg ishow [OPTIONS] ID**
+
 > Shows issue ID, or possibly its comment COMMENT
 
 options:
@@ -203,7 +263,8 @@ options:
 [+] marked option can be specified multiple times
 
 
-`ifind`
+
+**hg ifind [OPTIONS] QUERY**
 
 > Shows a list of issues matching the specified QUERY
 
@@ -215,6 +276,13 @@ options:
 |     |                   | [state, from, subject, date, priority,    |
 |     |                   | [resolution, ticket, etc..]               |
 |     |                   | (default: subject)                        |
+| -n  | --no-property     | Do not match the property. Use with       |
+|     |                   | --message to search only the message. The |
+|     |                   | --property will be ignored.               |
+| -m  | --message         | Search the message. If no match is found  |
+|     |                   | it will then search the property for a    |
+|     |                   | match. Use a blank property to ignore the | 
+|     |                   | property search.                          | 
 | -c  | --case-sensitive  | case sensitive search                     |
 | -r  | --regex           | use regular expressions                   |
 |     |                   | (exact option will be ignored)            |
@@ -224,72 +292,74 @@ options:
 [+] marked option can be specified multiple times
 
 
-Filters
--------
 
-Artemis scans all files of the form ``.issues/.filter*``, and processes them as
-config files. Section names become filter names, and the individual settings
-become properties. For example the following::
 
+
+
+
+[↑ back to top](#markdown-header-artemis)
+
+
+## Filters ##
+-------------
+
+Artemis scans all files of the form `.issues/.filter*`, and processes them as config files. Section names become filter names, and the individual settings become properties. For example the following:
+
+```
     [olddoc]
     category=documentation
     state=resolved
+```
 
-placed in a file ``.issues/.filter`` creates a filter `olddoc` which can be
-invoked with the `ilist` command::
+placed in a file `.issues/.filterMyCustom` creates a filter `olddoc` which can be invoked with the `ilist` command:
 
+```
     hg ilist -f olddoc
+```
 
 
-Format
-------
+[↑ back to top](#markdown-header-artemis)
 
-One can specify the output format for the `ilist` command. The default looks
-like::
 
+
+## Format ##
+------------
+
+One can specify the output format for the `ilist` command in the global hg configuration `~/.hgrc` or the repository local configuration `.hg/hgrc`.
+
+```
+    hg config --edit
+```
+
+The default looks like:
+
+```
     [artemis]
     format = %(id)s (%(len)3d) [%(state)s]: %(subject)s
+```
 
-Artemis passes a dictionary with the issue properties to the format string.
-(Plus ``id`` contains the issue id, and ``len`` contains the number of replies.)
+Artemis passes a dictionary with the issue properties to the format string. (Plus `id` contains the issue id, and `len` contains the number of replies.)
 
-It's possible to specify different output formats depending on the properties of
-the issue. The conditions are encoded in the config variable names as follows::
+It's possible to specify different output formats depending on the properties of the issue. The conditions are encoded in the config variable names as follows:
 
+```
     format:state*resolved&resolution*fixed  = %(id)s (%(len)3d) [fixed]: %(Subject)s
     format:state*resolved                   = %(id)s (%(len)3d) [%(state)s=%(resolution)s]: %(Subject)s
+```
 
-The first rule matches issues with the ``state`` property set to ``resolved``
-and ``resolution`` set to ``fixed``; it abridges the output. The secod rule
-matches all the ``resolved`` issues (not matched by the first rule); it annotates
-the issue's state with its ``resolution``.
+The first rule matches issues with the state property set to resolved and resolution set to fixed; it abridges the output. The secod rule matches all the resolved issues (not matched by the first rule); it annotates the issue's state with its resolution.
 
-Finally, the dictionary passed to the format string contains a subset of
-`ANSI codes`_, so one could color the summary lines::
+Finally, the dictionary passed to the format string contains a subset of [ANSI codes](http://en.wikipedia.org/wiki/ANSI_escape_code), so one could color the summary lines:
 
+```
     format:state*new = %(red)s%(bold)s%(id)s (%(len)3d) [%(state)s]: %(Subject)s%(reset)s
+```
 
-.. _`ANSI codes`:       http://en.wikipedia.org/wiki/ANSI_escape_code
+
+[↑ back to top](#markdown-header-artemis)
 
 
-.. _GitSupport:
 
-Git
----
+--------------------------------------------------------------------
 
-Artemis can now be used with git_.
-
-This requires the `git-artemis` script to be in the executable path,
-and the `artemis` module to be findable by python.  This can be done
-by installing using the supplied `setup.py`.
-
-Artemis commands are accessed from git like this::
-
-    git artemis list
-
-similarly for `show` or `add`.  Arguments and flags are exactly the
-same as for the mercurial version.
-
-It is not yet possible to specify formats via the `git config` command.
-
-.. _git:      https://git-scm.com/
+[http://www.mrzv.org/software/artemis/](http://www.mrzv.org/software/artemis/)
