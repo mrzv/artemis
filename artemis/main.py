@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from mercurial import hg, util, commands
+from mercurial import hg, util, commands, cmdutil
 from mercurial.i18n import _
 import sys, os, time, random, mailbox, glob, socket, ConfigParser
 import mimetypes
@@ -23,20 +23,28 @@ __author__ = 'frostbane'
 __date__ = '2016/03/02'
 
 
-cmdtable = {
-    'ilist' : (ArtemisList().list,
-               ArtemisList.commands,
-               _(ArtemisList.usage)),
-    'iadd'  : (ArtemisAdd().add,
-               ArtemisAdd.commands,
-               _(ArtemisAdd.usage)),
-    'ishow' : (ArtemisShow().show,
-               ArtemisShow.commands,
-               _(ArtemisShow.usage)),
-    'ifind' : (ArtemisFind().find,
-              ArtemisFind.commands,
-              _(ArtemisFind.usage)),
-}
+cmdtable = {}
+command = cmdutil.command(cmdtable)
+
+@command('ifind', ArtemisFind.commands, ArtemisFind.usage)
+def find(ui, repo, id=None, **opts):
+    '''find issues'''
+    return ArtemisFind().find(ui, repo, id, opts)
+
+@command('ishow', ArtemisShow.commands, ArtemisShow.usage)
+def show(ui, repo, id=None, **opts):
+    '''show issue details'''
+    return ArtemisShow().show(ui, repo, id, opts)
+
+@command('ilist', ArtemisList.commands, ArtemisList.usage)
+def list(ui, repo, id=None, **opts):
+    '''list issues'''
+    return ArtemisList().list(ui, repo, **opts)
+
+@command('iadd', ArtemisAdd.commands, ArtemisAdd.usage)
+def add(ui, repo, id=None, **opts):
+    '''add / edit issues'''
+    return ArtemisAdd().add(ui, repo, id, opts)
 
 if __name__ == "__main__":
     pass

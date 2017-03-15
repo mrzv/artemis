@@ -78,8 +78,8 @@ class ArtemisFind:
                              'Like comparison is used if exact is'
                              'uspecified.'),
     ]
-
     usage = 'hg ifind [OPTIONS] QUERY'
+
     ui = None
     repo = None
     opts = []
