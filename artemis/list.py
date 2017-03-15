@@ -29,7 +29,6 @@ class ArtemisList:
                             '' % (Artemis.default_issues_dir,
                                   Artemis.filter_prefix))
     ]
-
     usage = 'hg ilist [OPTIONS]'
 
     def __init__(self):
