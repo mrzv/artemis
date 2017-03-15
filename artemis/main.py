@@ -29,12 +29,12 @@ command = cmdutil.command(cmdtable)
 @command('ifind', ArtemisFind.commands, ArtemisFind.usage)
 def find(ui, repo, id=None, **opts):
     '''find issues'''
-    return ArtemisFind().find(ui, repo, id, opts)
+    return ArtemisFind().find(ui, repo, id, **opts)
 
 @command('ishow', ArtemisShow.commands, ArtemisShow.usage)
 def show(ui, repo, id=None, **opts):
     '''show issue details'''
-    return ArtemisShow().show(ui, repo, id, opts)
+    return ArtemisShow().show(ui, repo, id, **opts)
 
 @command('ilist', ArtemisList.commands, ArtemisList.usage)
 def list(ui, repo, id=None, **opts):
@@ -44,7 +44,7 @@ def list(ui, repo, id=None, **opts):
 @command('iadd', ArtemisAdd.commands, ArtemisAdd.usage)
 def add(ui, repo, id=None, **opts):
     '''add / edit issues'''
-    return ArtemisAdd().add(ui, repo, id, opts)
+    return ArtemisAdd().add(ui, repo, id, **opts)
 
 if __name__ == "__main__":
     pass
