@@ -2,7 +2,7 @@
 
 """A very simple and lightweight issue tracker for Mercurial."""
 
-from mercurial import hg, util, commands
+from mercurial import hg, util, commands, cmdutil
 from mercurial.i18n import _
 import os, time, random, mailbox, glob, socket, ConfigParser
 import mimetypes
@@ -25,6 +25,17 @@ date_format = '%a, %d %b %Y %H:%M:%S %1%2'
 maildir_dirs = ['new','cur','tmp']
 default_format = '%(id)s (%(len)3d) [%(state)s]: %(Subject)s'
 
+cmdtable = {}
+command = cmdutil.command(cmdtable)
+
+@command('ilist', [('a', 'all', False,
+                    'list all issues (by default only those with state new)'),
+                   ('p', 'property', [],
+                    'list issues with specific field values (e.g., -p state=fixed); lists all possible values of a property if no = sign'),
+                   ('o', 'order', 'new', 'order of the issues; choices: "new" (date submitted), "latest" (date of the last message)'),
+                   ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
+                   ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (default_issues_dir, filter_prefix))],
+                  _('hg ilist [OPTIONS]'))
 def ilist(ui, repo, **opts):
     """List issues associated with the project"""
 
@@ -98,6 +109,17 @@ def ilist(ui, repo, **opts):
                 ui.write("  %s\n" % value)
 
 
+@command('iadd', [('a', 'attach', [],
+                   'attach file(s) (e.g., -a filename1 -a filename2)'),
+                  ('p', 'property', [],
+                   'update properties (e.g., -p state=fixed)'),
+                  ('n', 'no-property-comment', None,
+                   'do not add a comment about changed properties'),
+                  ('m', 'message', '',
+                   'use <text> as an issue subject'),
+                  ('c', 'commit', False,
+                   'perform a commit after the addition')],
+                 _('hg iadd [OPTIONS] [ID] [COMMENT]'))
 def iadd(ui, repo, id = None, comment = 0, **opts):
     """Adds a new issue, or comment to an existing issue ID or its comment COMMENT"""
 
@@ -213,6 +235,11 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
     else:
         _show_mbox(ui, mbox, 0)
 
+@command('ishow', [('a', 'all', None, 'list all comments'),
+                   ('s', 'skip', '>', 'skip lines starting with a substring'),
+                   ('x', 'extract', [], 'extract attachments (provide attachment number as argument)'),
+                   ('', 'mutt', False, 'use mutt to show issue')],
+                  _('hg ishow [OPTIONS] ID [COMMENT]'))
 def ishow(ui, repo, id, comment = 0, **opts):
     """Shows issue ID, or possibly its comment COMMENT"""
 
@@ -478,36 +505,5 @@ class PropertiesDictionary(dict):
 
     def __setitem__(self, k, v):
         super(PropertiesDictionary, self).__setitem__(k.lower(), v)
-
-
-cmdtable = {
-    'ilist':    (ilist,
-                 [('a', 'all', False,
-                   'list all issues (by default only those with state new)'),
-                  ('p', 'property', [],
-                   'list issues with specific field values (e.g., -p state=fixed); lists all possible values of a property if no = sign'),
-                  ('o', 'order', 'new', 'order of the issues; choices: "new" (date submitted), "latest" (date of the last message)'),
-                  ('d', 'date', '', 'restrict to issues matching the date (e.g., -d ">12/28/2007)"'),
-                  ('f', 'filter', '', 'restrict to pre-defined filter (in %s/%s*)' % (default_issues_dir, filter_prefix))],
-                 _('hg ilist [OPTIONS]')),
-    'iadd':       (iadd,
-                 [('a', 'attach', [],
-                   'attach file(s) (e.g., -a filename1 -a filename2)'),
-                  ('p', 'property', [],
-                   'update properties (e.g., -p state=fixed)'),
-                  ('n', 'no-property-comment', None,
-                   'do not add a comment about changed properties'),
-                  ('m', 'message', '',
-                   'use <text> as an issue subject'),
-                  ('c', 'commit', False,
-                   'perform a commit after the addition')],
-                 _('hg iadd [OPTIONS] [ID] [COMMENT]')),
-    'ishow':      (ishow,
-                 [('a', 'all', None, 'list all comments'),
-                  ('s', 'skip', '>', 'skip lines starting with a substring'),
-                  ('x', 'extract', [], 'extract attachments (provide attachment number as argument)'),
-                  ('', 'mutt', False, 'use mutt to show issue')],
-                 _('hg ishow [OPTIONS] ID [COMMENT]')),
-}
 
 # vim: expandtab
