@@ -1,10 +1,5 @@
 syntax:glob
-*.pyo
 *.pyc
 artemis.egg-info/
 build/
 dist/
-.idea/*
-pycharm-debug.egg
-syntax: glob
-artemis.iml
