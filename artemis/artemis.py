@@ -2,8 +2,16 @@
 
 """A very simple and lightweight issue tracker for Mercurial."""
 
-from mercurial import hg, util, commands, cmdutil
+from mercurial import hg, util, commands, cmdutil, registrar
 from mercurial.i18n import _
+try:
+    from mercurial.utils.dateutil import parsedate,datestr,matchdate
+    from mercurial.utils.stringutil import shortuser
+    from mercurial.utils.procutil import system
+except:
+    from mercurial.util import parsedate,datestr,matchdate
+    from mercurial.util import shortuser
+    from mercurial.util import system
 import os, time, random, mailbox, glob, socket, ConfigParser
 import mimetypes
 from email import encoders
@@ -26,7 +34,10 @@ maildir_dirs = ['new','cur','tmp']
 default_format = '%(id)s (%(len)3d) [%(state)s]: %(Subject)s'
 
 cmdtable = {}
-command = cmdutil.command(cmdtable)
+try:
+    command = registrar.command(cmdtable) # was cmdtable.command
+except:
+    command = cmdutil.command(cmdtable)
 
 @command('ilist', [('a', 'all', False,
                     'list all issues (by default only those with state new)'),
@@ -44,7 +55,7 @@ def ilist(ui, repo, **opts):
     properties = []
     match_date, date_match = False, lambda x: True
     if opts['date']:
-        match_date, date_match = True, util.matchdate(opts['date'])
+        match_date, date_match = True, matchdate(opts['date'])
     order = 'new'
     if opts['order']:
         order = opts['order']
@@ -89,7 +100,7 @@ def ilist(ui, repo, **opts):
                 property_match = property_match and (property not in mbox[root])
 
         if not show_all and (not properties or not property_match) and (properties or mbox[root]['State'].upper() in [f.upper() for f in state['resolved']]): continue
-        if match_date and not date_match(util.parsedate(mbox[root]['date'])[0]): continue
+        if match_date and not date_match(parsedate(mbox[root]['date'])[0]): continue
 
         if not list_properties:
             summaries.append((_summary_line(mbox, root, issue[len(issues_path)+1:], formats),     # +1 for trailing /
@@ -142,7 +153,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
 
     user = ui.username()
 
-    default_issue_text  =         "From: %s\nDate: %s\n" % (user, util.datestr(format = date_format))
+    default_issue_text  =         "From: %s\nDate: %s\n" % (user, datestr(format = date_format))
     if not id:
         default_issue_text +=     "State: %s\n" % default_state
         default_issue_text +=     "Subject: brief description\n\n"
@@ -164,7 +175,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
         else:
             state_str = ''
         issue = "From: %s\nDate: %s\nSubject: %s\n%s" % \
-                (user, util.datestr(format=date_format), message, state_str)
+                (user, datestr(format=date_format), message, state_str)
     elif not no_comment:
         issue = ui.edit(default_issue_text, user)
 
@@ -179,7 +190,7 @@ def iadd(ui, repo, id = None, comment = 0, **opts):
         properties_subject = ', '.join(['%s=%s' % (property, value) for (property, value) in properties])
 
         issue =     "From: %s\nDate: %s\nSubject: changed properties (%s)\n" % \
-                     (user, util.datestr(format = date_format), properties_subject)
+                     (user, datestr(format = date_format), properties_subject)
 
     # Create the message
     msg = mailbox.MaildirMessage(issue)
@@ -252,7 +263,7 @@ def ishow(ui, repo, id, comment = 0, **opts):
     _create_missing_dirs(os.path.join(repo.root, issues_dir), issue)
 
     if opts.get('mutt'):
-        return util.system('mutt -R -f %s' % issue)
+        return system('mutt -R -f %s' % issue)
 
     mbox = mailbox.Maildir(issue, factory=mailbox.MaildirMessage)
 
@@ -373,7 +384,7 @@ def _show_mbox(ui, mbox, comment, **opts):
         id,offset = id_stack.pop()
         id_stack += (id in children and map(lambda x: (x, offset+1), reversed(children[id]))) or []
         index, msg = messages[id]
-        ui.write('  '*offset + '%d: [%s] %s\n' % (index, util.shortuser(msg['From']), msg['Subject']))
+        ui.write('  '*offset + '%d: [%s] %s\n' % (index, shortuser(msg['From']), msg['Subject']))
     ui.write('-'*70 + '\n')
 
 def _find_root_key(maildir):
@@ -384,7 +395,7 @@ def _find_root_key(maildir):
 def _order_keys_date(mbox):
     keys = mbox.keys()
     root = _find_root_key(mbox)
-    keys.sort(lambda k1,k2: -(k1 == root) or cmp(util.parsedate(mbox[k1]['date']), util.parsedate(mbox[k2]['date'])))
+    keys.sort(lambda k1,k2: -(k1 == root) or cmp(parsedate(mbox[k1]['date']), parsedate(mbox[k2]['date'])))
     return keys
 
 def _find_mbox_date(mbox, root, order):
@@ -393,7 +404,7 @@ def _find_mbox_date(mbox, root, order):
         msg = mbox[keys[-1]]
     else:   # new
         msg = mbox[root]
-    return util.parsedate(msg['date'])
+    return parsedate(msg['date'])
 
 def _random_id():
     return "%x" % random.randint(2**63, 2**64-1)
