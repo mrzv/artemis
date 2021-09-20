@@ -23,6 +23,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from itertools import izip
 
+__version__ = '0.5.0'
 
 state = { 'new':      ['new'],
           'resolved': ['fixed', 'resolved'] }
